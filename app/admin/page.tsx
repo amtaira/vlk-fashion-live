@@ -26,11 +26,12 @@ export default function AdminPortal() {
     if (o) setOrders(o);
   }
 
-  // MANUAL LOGOUT FUNCTION
+  // LOGOUT LOGIC
   const handleLogout = () => {
-    // Kills the cookie by setting expiration to the past
+    // Delete the cookie by setting it to the past
     document.cookie = "vlk_admin_key=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-    window.location.href = "/login";
+    // Redirect with success message
+    router.push('/login?logout=success');
   };
 
   const deleteProduct = async (id: string) => {
@@ -39,6 +40,7 @@ export default function AdminPortal() {
     fetchData();
   };
 
+  // ... (Analytics function remains the same)
   const getAnalytics = () => {
     if (orders.length === 0) return { topProduct: 'N/A', peakTime: 'N/A' };
     const counts: any = {};
@@ -49,7 +51,6 @@ export default function AdminPortal() {
     const peakHour = hours.indexOf(Math.max(...hours));
     return { topProduct, peakTime: `${peakHour}:00` };
   };
-
   const insights = getAnalytics();
 
   return (
@@ -66,29 +67,26 @@ export default function AdminPortal() {
           <button onClick={() => setActiveTab('DASHBOARD')} className={`text-left text-[10px] uppercase tracking-widest ${activeTab === 'DASHBOARD' ? 'text-white font-bold underline underline-offset-8' : 'opacity-30'}`}>01. Dashboard</button>
           <button onClick={() => setActiveTab('INVENTORY')} className={`text-left text-[10px] uppercase tracking-widest ${activeTab === 'INVENTORY' ? 'text-white font-bold underline underline-offset-8' : 'opacity-30'}`}>02. Inventory</button>
           
-          {/* NEW LOGOUT BUTTON */}
-          <button onClick={handleLogout} className="text-left text-[9px] uppercase tracking-widest text-red-600 hover:text-white transition-colors mt-12 border-t border-white/5 pt-4">
+          {/* LOGOUT BUTTON */}
+          <button onClick={handleLogout} className="mt-20 text-left text-[9px] uppercase tracking-widest text-red-500 hover:text-white border-t border-white/10 pt-4 transition-colors">
             Terminate Session
           </button>
         </nav>
 
         <div className="md:hidden flex items-center gap-4">
-             <button onClick={handleLogout} className="text-[8px] uppercase border border-red-900/40 px-2 py-1">Logout</button>
-             <div className="text-[9px] uppercase font-bold text-white border border-white/10 px-3 py-1">admin</div>
+          <button onClick={handleLogout} className="text-[8px] uppercase border border-red-500/30 px-2 py-1 text-red-500">Logout</button>
+          <div className="text-[9px] uppercase font-bold text-white border border-white/10 px-3 py-1">admin</div>
         </div>
       </aside>
 
-      {/* MOBILE BOTTOM NAV */}
-      <nav className="md:hidden fixed bottom-0 w-full bg-black border-t border-white/10 flex z-[100]">
-        <button onClick={() => setActiveTab('DASHBOARD')} className={`flex-1 py-4 text-[10px] uppercase tracking-widest ${activeTab === 'DASHBOARD' ? 'bg-[#a67c52] text-black font-bold' : 'opacity-50'}`}>Dashboard</button>
-        <button onClick={() => setActiveTab('INVENTORY')} className={`flex-1 py-4 text-[10px] uppercase tracking-widest ${activeTab === 'INVENTORY' ? 'bg-[#a67c52] text-black font-bold' : 'opacity-50'}`}>Inventory</button>
-      </nav>
-
+      {/* ... (Rest of your Main UI content) */}
       <main className="flex-1 md:ml-64 p-6 md:p-16">
-        {activeTab === 'DASHBOARD' ? (
-          <div className="animate-in fade-in">
-            <h3 className="text-2xl md:text-3xl font-black text-white mb-8 md:mb-12 italic">Performance</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 mb-8">
+         {/* Insert the same Dashboard/Inventory logic you had before here */}
+         {activeTab === 'DASHBOARD' ? (
+           <div className="animate-in fade-in">
+             <h3 className="text-2xl md:text-3xl font-black text-white mb-8 md:mb-12 italic">Performance</h3>
+             {/* ... analytics grid and orders table ... */}
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 mb-8">
                <div className="border border-[#a67c52]/20 p-6 md:p-8 bg-black">
                 <p className="text-[8px] uppercase opacity-40 mb-1">Top Item</p>
                 <p className="text-lg md:text-xl font-black text-white truncate">{insights.topProduct}</p>
@@ -102,7 +100,7 @@ export default function AdminPortal() {
                 <p className="text-lg md:text-xl font-black text-white">${orders.reduce((s,o)=>s+(o.amount||0),0)}</p>
               </div>
             </div>
-
+            {/* Orders Table */}
             <div className="border border-white/5 bg-black overflow-x-auto">
               <table className="w-full text-left text-[8px] md:text-[9px] uppercase tracking-widest min-w-[500px]">
                 <thead className="opacity-40 border-b border-white/5 bg-white/5">
@@ -123,11 +121,12 @@ export default function AdminPortal() {
                 </tbody>
               </table>
             </div>
-          </div>
-        ) : (
-          <div className="animate-in slide-in-from-right-4 space-y-8 md:space-y-12">
-            <h3 className="text-2xl md:text-3xl font-black text-white italic tracking-tighter">Inventory</h3>
-            <section className="bg-black border border-white/5 p-6 md:p-8">
+           </div>
+         ) : (
+           <div className="animate-in slide-in-from-right-4 space-y-8 md:space-y-12">
+             <h3 className="text-2xl md:text-3xl font-black text-white italic tracking-tighter">Inventory</h3>
+             {/* ... Inventory forms and product list ... */}
+             <section className="bg-black border border-white/5 p-6 md:p-8">
               <h4 className="text-[9px] uppercase opacity-40 mb-4 font-bold italic">1. Collections</h4>
               <form onSubmit={(e)=>e.preventDefault()} className="flex flex-col md:flex-row gap-4">
                 <input placeholder="New Name" value={newCatName} onChange={(e)=>setNewCatName(e.target.value)} className="flex-1 bg-transparent border-b border-white/10 py-2 text-[10px] text-white outline-none"/>
@@ -161,10 +160,11 @@ export default function AdminPortal() {
                 ))}
               </section>
             </div>
-          </div>
-        )}
+           </div>
+         )}
       </main>
 
+      {/* ... (Receipt modal stays exactly as it was) */}
       {selectedOrder && (
         <div className="fixed inset-0 z-[600] flex items-start justify-center bg-black/98 p-4 overflow-y-auto" onClick={() => setSelectedOrder(null)}>
           <div className="relative bg-[#f2f2f2] p-6 md:p-10 text-black w-full max-w-sm shadow-2xl font-mono mt-10 mb-20" onClick={e=>e.stopPropagation()}>
