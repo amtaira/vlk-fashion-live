@@ -1,8 +1,10 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const router = useRouter();
   const [catalogues, setCatalogues] = useState<any[]>([]);
   const [activeCatalogue, setActiveCatalogue] = useState<any>(null);
   const [cart, setCart] = useState<any[]>([]);
@@ -14,7 +16,6 @@ export default function Home() {
   // Payment States
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [cardNumber, setCardNumber] = useState('');
   const [selectedMethod, setSelectedMethod] = useState<'NONE' | 'MPESA' | 'VISA' | 'PAYBILL'>('NONE');
   const [loading, setLoading] = useState(false);
 
@@ -77,7 +78,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* NAVIGATION - Responsive Padding */}
+      {/* NAVIGATION */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center p-6 md:p-10 bg-gradient-to-b from-black to-transparent">
         <div className="text-xl md:text-2xl font-black tracking-tighter cursor-pointer text-white italic" onClick={() => setActiveCatalogue(null)}>VLK²</div>
         <button onClick={() => setIsCartOpen(true)} className="bg-[#a67c52] text-black px-4 md:px-6 py-2 text-[8px] md:text-[10px] font-black tracking-[0.2em] uppercase hover:bg-white transition-all">
@@ -87,7 +88,6 @@ export default function Home() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-10 pt-32 md:pt-48 pb-20">
         {!activeCatalogue ? (
-          /* CATALOGUE SELECTION - Mobile Grid Fix */
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-10">
             {catalogues.map((cat) => (
               <div key={cat.id} onClick={() => setActiveCatalogue(cat)} className="group border border-white/5 h-[300px] md:h-[500px] flex flex-col items-center justify-center cursor-pointer hover:border-[#a67c52]/40 transition-all bg-black/40 relative overflow-hidden">
@@ -98,7 +98,6 @@ export default function Home() {
             ))}
           </div>
         ) : (
-          /* PRODUCT VIEW - Responsive Grid */
           <div className="animate-in fade-in duration-700">
             <button onClick={() => setActiveCatalogue(null)} className="mb-8 text-[8px] md:text-[9px] uppercase tracking-[0.4em] opacity-40 hover:opacity-100 transition-opacity">← Back to Collections</button>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-px bg-white/5 border border-white/5">
@@ -119,7 +118,18 @@ export default function Home() {
         )}
       </div>
 
-      {/* CHECKOUT SYSTEM - Mobile Sidebar Fix */}
+      {/* --- NEW SECRET ADMIN ENTRY SECTION --- */}
+      <footer className="relative z-10 w-full py-20 border-t border-white/5 mt-20 flex flex-col items-center gap-4">
+        <p className="text-[7px] tracking-[0.8em] opacity-20 uppercase">VLK² Global Archive Systems</p>
+        <button 
+          onClick={() => router.push('/login')}
+          className="text-[7px] uppercase tracking-[0.5em] text-white/10 hover:text-[#a67c52] transition-colors font-mono"
+        >
+          // ACCESS_SYSTEM_TERMINAL
+        </button>
+      </footer>
+
+      {/* CHECKOUT SYSTEM */}
       {isCartOpen && (
         <div className="fixed inset-0 z-[100] flex justify-end">
           <div className="absolute inset-0 bg-black/90 md:backdrop-blur-md" onClick={() => setIsCartOpen(false)} />
@@ -153,7 +163,6 @@ export default function Home() {
                   <p className="text-[8px] uppercase tracking-[0.4em] opacity-40">Protocol Details</p>
                   <input placeholder="EMAIL ADDRESS" value={email} onChange={(e)=>setEmail(e.target.value)} className="w-full bg-transparent border-b border-white/10 py-4 outline-none text-[10px] text-white focus:border-[#a67c52]" />
                   
-                  {/* Payment Buttons - Grid Fix */}
                   <div className="grid grid-cols-1 gap-2">
                     <div className="grid grid-cols-2 gap-2">
                         <button onClick={() => setSelectedMethod('MPESA')} className={`py-4 text-[8px] border uppercase tracking-widest transition-all font-bold ${selectedMethod === 'MPESA' ? 'border-green-500 text-green-500 bg-green-500/5' : 'border-white/5 opacity-40'}`}>M-Pesa</button>
@@ -164,16 +173,6 @@ export default function Home() {
 
                   {selectedMethod === 'MPESA' && (
                     <input placeholder="254..." value={phone} onChange={(e)=>setPhone(e.target.value)} className="w-full bg-transparent border-b border-green-500/40 py-4 text-[10px] text-white outline-none" />
-                  )}
-
-                  {selectedMethod === 'VISA' && (
-                    <div className="space-y-4">
-                      <input placeholder="CARD NUMBER" className="w-full bg-transparent border-b border-blue-500/40 py-4 text-[10px] text-white outline-none" />
-                      <div className="grid grid-cols-2 gap-4">
-                        <input placeholder="MM/YY" className="bg-transparent border-b border-blue-500/40 py-4 text-[10px] text-white outline-none" />
-                        <input placeholder="CVV" className="bg-transparent border-b border-blue-500/40 py-4 text-[10px] text-white outline-none" />
-                      </div>
-                    </div>
                   )}
 
                   {selectedMethod === 'PAYBILL' && (
