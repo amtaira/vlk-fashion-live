@@ -1,22 +1,19 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useRouter } from 'next/navigation';
 
-export default function adminPortal() {
+export default function AdminPortal() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'INVENTORY'>('DASHBOARD');
   const [products, setProducts] = useState<any[]>([]);
   const [catalogues, setCatalogues] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
-  const [modal, setModal] = useState<{title: string, body: string, type: 'SUCCESS' | 'ERROR'} | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
 
   // Form States
-  const [name, setName] = useState('');
-  const [price, setPrice] = useState('');
-  const [catId, setCatId] = useState('');
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [newCatName, setNewCatName] = useState('');
+  const [catId, setCatId] = useState('');
 
   useEffect(() => { fetchData(); }, []);
 
@@ -28,6 +25,13 @@ export default function adminPortal() {
     if (c) setCatalogues(c);
     if (o) setOrders(o);
   }
+
+  // MANUAL LOGOUT FUNCTION
+  const handleLogout = () => {
+    // Kills the cookie by setting expiration to the past
+    document.cookie = "vlk_admin_key=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+    window.location.href = "/login";
+  };
 
   const deleteProduct = async (id: string) => {
     if(!confirm("Archive deletion permanent. Proceed?")) return;
@@ -51,17 +55,27 @@ export default function adminPortal() {
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-[#050505] text-[#a67c52] font-mono pb-24 md:pb-0">
       
-      {/* SIDEBAR (Desktop) / TOP BAR (Mobile) */}
+      {/* SIDEBAR */}
       <aside className="w-full md:w-64 border-b md:border-r border-white/5 flex md:flex-col p-6 md:p-8 md:fixed h-auto md:h-full bg-black z-20 justify-between items-center md:items-start">
         <div>
           <h1 className="text-xl md:text-2xl font-black text-white italic">VLK²</h1>
           <p className="text-[7px] md:text-[8px] uppercase tracking-widest opacity-40 hidden md:block">System Insights</p>
         </div>
+        
         <nav className="hidden md:flex flex-col gap-8 mt-20">
           <button onClick={() => setActiveTab('DASHBOARD')} className={`text-left text-[10px] uppercase tracking-widest ${activeTab === 'DASHBOARD' ? 'text-white font-bold underline underline-offset-8' : 'opacity-30'}`}>01. Dashboard</button>
           <button onClick={() => setActiveTab('INVENTORY')} className={`text-left text-[10px] uppercase tracking-widest ${activeTab === 'INVENTORY' ? 'text-white font-bold underline underline-offset-8' : 'opacity-30'}`}>02. Inventory</button>
+          
+          {/* NEW LOGOUT BUTTON */}
+          <button onClick={handleLogout} className="text-left text-[9px] uppercase tracking-widest text-red-600 hover:text-white transition-colors mt-12 border-t border-white/5 pt-4">
+            Terminate Session
+          </button>
         </nav>
-        <div className="md:hidden text-[9px] uppercase font-bold text-white border border-white/10 px-3 py-1">admin</div>
+
+        <div className="md:hidden flex items-center gap-4">
+             <button onClick={handleLogout} className="text-[8px] uppercase border border-red-900/40 px-2 py-1">Logout</button>
+             <div className="text-[9px] uppercase font-bold text-white border border-white/10 px-3 py-1">admin</div>
+        </div>
       </aside>
 
       {/* MOBILE BOTTOM NAV */}

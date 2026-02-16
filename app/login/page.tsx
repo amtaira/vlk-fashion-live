@@ -2,21 +2,16 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function AdminLogin() { // Capitalized component name for best practice
+export default function AdminLogin() {
   const [key, setKey] = useState('');
   const router = useRouter();
 
   const handleAccess = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    /** * SECURITY UPDATE: 
-     * Removed 'max-age=86400' (24 hours). 
-     * Without an expiry, this becomes a session cookie.
-     * It will now be deleted automatically when the browser session ends.
-     */
+    // Removed max-age. Now the cookie expires when the browser closes.
     document.cookie = `vlk_admin_key=${key}; path=/; SameSite=Strict`;
-    
     router.push('/admin');
+    router.refresh(); 
   };
 
   return (
