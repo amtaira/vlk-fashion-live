@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useRouter } from 'next/navigation'; // Correct import for App Router
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const router = useRouter();
@@ -66,10 +66,11 @@ export default function Home() {
   };
 
   return (
-    <main className="relative min-h-screen text-[#a67c52] font-mono selection:bg-[#a67c52] selection:text-black bg-black">
+    <main className="relative min-h-screen text-[#a67c52] font-mono selection:bg-[#a67c52] selection:text-black">
       {/* BACKGROUND */}
       <div className="fixed inset-0 -z-10 bg-black" />
-      
+      <div className="fixed inset-0 -z-10 opacity-30 bg-cover bg-center grayscale pointer-events-none" style={{ backgroundImage: "url('/hero-bg.jpg')" }} />
+
       {/* FEEDBACK NOTIFICATION */}
       {notification && (
         <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[200] bg-[#a67c52] text-black px-6 py-3 text-[9px] font-black uppercase tracking-[0.3em] shadow-2xl animate-in slide-in-from-top-5 duration-300">
@@ -103,7 +104,7 @@ export default function Home() {
               {activeCatalogue.products?.map((item: any) => (
                 <div key={item.id} className="bg-[#050505] p-6 md:p-10 group hover:bg-white/[0.01] transition-colors">
                   <div className="aspect-[3/4] bg-zinc-900 mb-6 md:mb-8 overflow-hidden border border-white/5">
-                    {item.image_url && <img src={item.image_url} alt={item.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105" />}
+                    <img src={item.image_url} alt={item.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105" />
                   </div>
                   <div className="text-center">
                     <h3 className="text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-white font-bold mb-2">{item.name}</h3>
@@ -121,7 +122,6 @@ export default function Home() {
       <footer className="relative z-20 w-full py-20 border-t border-[#a67c52]/10 mt-20 flex flex-col items-center justify-center bg-black">
          <p className="text-[7px] tracking-[1em] text-[#a67c52] opacity-30 uppercase mb-6">Internal Operations Only</p>
          <button 
-           type="button"
            onClick={() => router.push('/login')}
            className="px-8 py-3 border border-[#a67c52] text-[#a67c52] text-[9px] font-bold uppercase tracking-[0.4em] hover:bg-[#a67c52] hover:text-black transition-all"
          >
@@ -134,7 +134,7 @@ export default function Home() {
       {isCartOpen && (
         <div className="fixed inset-0 z-[100] flex justify-end">
           <div className="absolute inset-0 bg-black/90 md:backdrop-blur-md" onClick={() => setIsCartOpen(false)} />
-          <div className="relative w-full md:max-w-lg bg-[#050505] border-l border-[#a67c52]/20 p-6 md:p-12 overflow-y-auto h-full">
+          <div className="relative w-full md:max-w-lg bg-[#050505] border-l border-[#a67c52]/20 p-6 md:p-12 overflow-y-auto">
             <header className="flex justify-between items-center mb-8 md:mb-12">
               <h2 className="text-[9px] md:text-[10px] uppercase tracking-[0.5em] text-white font-bold">Consolidated Archive</h2>
               <button onClick={() => setIsCartOpen(false)} className="text-[14px] md:text-[8px] uppercase tracking-widest opacity-30 hover:opacity-100 p-2">✕</button>
@@ -143,7 +143,7 @@ export default function Home() {
             {cart.length === 0 ? (
               <p className="text-[9px] opacity-30 uppercase tracking-widest text-center py-20">Archive is empty.</p>
             ) : (
-              <div className="space-y-8 pb-20">
+              <div className="space-y-8">
                 <div className="space-y-4 border-b border-white/5 pb-8">
                   {cart.map((item, i) => (
                     <div key={i} className="flex justify-between items-center text-[9px] md:text-[10px] uppercase tracking-widest">
@@ -166,14 +166,21 @@ export default function Home() {
                   
                   <div className="grid grid-cols-1 gap-2">
                     <div className="grid grid-cols-2 gap-2">
-                        <button type="button" onClick={() => setSelectedMethod('MPESA')} className={`py-4 text-[8px] border uppercase tracking-widest transition-all font-bold ${selectedMethod === 'MPESA' ? 'border-green-500 text-green-500 bg-green-500/5' : 'border-white/5 opacity-40'}`}>M-Pesa</button>
-                        <button type="button" onClick={() => setSelectedMethod('VISA')} className={`py-4 text-[8px] border uppercase tracking-widest transition-all font-bold ${selectedMethod === 'VISA' ? 'border-blue-500 text-blue-500 bg-blue-500/5' : 'border-white/5 opacity-40'}`}>Card</button>
+                        <button onClick={() => setSelectedMethod('MPESA')} className={`py-4 text-[8px] border uppercase tracking-widest transition-all font-bold ${selectedMethod === 'MPESA' ? 'border-green-500 text-green-500 bg-green-500/5' : 'border-white/5 opacity-40'}`}>M-Pesa</button>
+                        <button onClick={() => setSelectedMethod('VISA')} className={`py-4 text-[8px] border uppercase tracking-widest transition-all font-bold ${selectedMethod === 'VISA' ? 'border-blue-500 text-blue-500 bg-blue-500/5' : 'border-white/5 opacity-40'}`}>Card</button>
                     </div>
-                    <button type="button" onClick={() => setSelectedMethod('PAYBILL')} className={`py-4 text-[8px] border uppercase tracking-widest transition-all font-bold ${selectedMethod === 'PAYBILL' ? 'border-[#a67c52] text-[#a67c52] bg-[#a67c52]/5' : 'border-white/5 opacity-40'}`}>Paybill (Manual)</button>
+                    <button onClick={() => setSelectedMethod('PAYBILL')} className={`py-4 text-[8px] border uppercase tracking-widest transition-all font-bold ${selectedMethod === 'PAYBILL' ? 'border-[#a67c52] text-[#a67c52] bg-[#a67c52]/5' : 'border-white/5 opacity-40'}`}>Paybill (Manual)</button>
                   </div>
 
                   {selectedMethod === 'MPESA' && (
                     <input placeholder="254..." value={phone} onChange={(e)=>setPhone(e.target.value)} className="w-full bg-transparent border-b border-green-500/40 py-4 text-[10px] text-white outline-none" />
+                  )}
+
+                  {selectedMethod === 'PAYBILL' && (
+                    <div className="p-6 bg-white/[0.02] border border-[#a67c52]/20 text-center">
+                      <p className="text-[10px] text-white font-black tracking-widest">BUSINESS: 247247</p>
+                      <p className="text-[10px] text-white font-black tracking-widest mt-2">ACC: 0795151303</p>
+                    </div>
                   )}
 
                   {selectedMethod !== 'NONE' && (
