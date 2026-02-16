@@ -86,7 +86,7 @@ export default function Home() {
         </button>
       </nav>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-10 pt-32 md:pt-48 pb-20">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-10 pt-32 md:pt-48 pb-10">
         {!activeCatalogue ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-10">
             {catalogues.map((cat) => (
@@ -118,15 +118,16 @@ export default function Home() {
         )}
       </div>
 
-      {/* --- NEW SECRET ADMIN ENTRY SECTION --- */}
-      <footer className="relative z-10 w-full py-20 border-t border-white/5 mt-20 flex flex-col items-center gap-4">
-        <p className="text-[7px] tracking-[0.8em] opacity-20 uppercase">VLK² Global Archive Systems</p>
-        <button 
-          onClick={() => router.push('/login')}
-          className="text-[7px] uppercase tracking-[0.5em] text-white/10 hover:text-[#a67c52] transition-colors font-mono"
-        >
-          // ACCESS_SYSTEM_TERMINAL
-        </button>
+      {/* --- ADMIN ACCESS FOOTER --- */}
+      <footer className="relative z-20 w-full py-20 border-t border-[#a67c52]/10 mt-20 flex flex-col items-center justify-center bg-black">
+         <p className="text-[7px] tracking-[1em] text-[#a67c52] opacity-30 uppercase mb-6">Internal Operations Only</p>
+         <button 
+           onClick={() => router.push('/login')}
+           className="px-8 py-3 border border-[#a67c52] text-[#a67c52] text-[9px] font-bold uppercase tracking-[0.4em] hover:bg-[#a67c52] hover:text-black transition-all"
+         >
+           Initialize Admin Session
+         </button>
+         <p className="mt-8 text-[6px] text-white/10 uppercase tracking-widest">© 2026 VLK² Global Archive</p>
       </footer>
 
       {/* CHECKOUT SYSTEM */}
