@@ -12,15 +12,13 @@ export default function Home() {
   const [showShipping, setShowShipping] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Selection States for Corteiz-style sizing
+  // Selection States
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
+  const [activeImage, setActiveImage] = useState(''); // NEW: Tracks the current color image
   
-  // Feedback States
   const [notification, setNotification] = useState<string | null>(null);
-  
-  // Payment States
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [selectedMethod, setSelectedMethod] = useState<'NONE' | 'MPESA' | 'VISA' | 'PAYBILL'>('NONE');
@@ -34,20 +32,38 @@ export default function Home() {
     fetchData();
   }, []);
 
-  // Updated to handle specific Corteiz size/color choices
+  // When a product is clicked, set the initial image
+  const handleProductClick = (product: any) => {
+    setSelectedProduct(product);
+    setActiveImage(product.image_url);
+    setSelectedColor(''); // Reset color choice
+    setSelectedSize(''); // Reset size choice
+  };
+
+  // NEW: Logic to swap images based on color choice
+  const handleColorChange = (color: string) => {
+    setSelectedColor(color);
+    if (!selectedProduct) return;
+
+    // Assumes naming: image.png -> image-BLACK.png
+    // We split by extension to insert the color suffix
+    const base = selectedProduct.image_url.substring(0, selectedProduct.image_url.lastIndexOf('.'));
+    const ext = selectedProduct.image_url.substring(selectedProduct.image_url.lastIndexOf('.'));
+    setActiveImage(`${base}-${color}${ext}`);
+  };
+
   const addToCart = () => {
     if (!selectedSize || !selectedColor) return alert("SELECT SIZE + COLOR");
     
     const finalProduct = { 
       ...selectedProduct, 
-      name: `${selectedProduct.name} (${selectedColor}/${selectedSize})`
+      name: `${selectedProduct.name} (${selectedColor}/${selectedSize})`,
+      image_url: activeImage // Store the specific color image in cart
     };
     
     setCart((prev) => [...prev, finalProduct]);
     setNotification(`${selectedProduct.name} ARCHIVED`);
     setSelectedProduct(null);
-    setSelectedSize('');
-    setSelectedColor('');
     setTimeout(() => setNotification(null), 3000);
   };
 
@@ -57,7 +73,6 @@ export default function Home() {
 
   const total = cart.reduce((sum, item) => sum + item.price, 0);
 
-  // Search Logic
   const allProducts = catalogues.flatMap(cat => cat.products || []);
   const filteredProducts = allProducts.filter(p => 
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -91,23 +106,19 @@ export default function Home() {
 
   return (
     <main className="relative min-h-screen text-[#D4AF37] font-mono selection:bg-[#D4AF37] selection:text-black">
-      {/* BACKGROUND */}
       <div className="fixed inset-0 -z-10 bg-black" />
       <div className="fixed inset-0 -z-10 opacity-30 bg-cover bg-center grayscale pointer-events-none" style={{ backgroundImage: "url('/hero-bg.jpg')" }} />
 
-      {/* FEEDBACK NOTIFICATION */}
       {notification && (
         <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[200] bg-[#D4AF37] text-black px-6 py-3 text-[9px] font-black uppercase tracking-[0.3em] shadow-2xl">
           {notification}
         </div>
       )}
 
-      {/* NAVIGATION */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center p-6 md:p-10 bg-gradient-to-b from-black to-transparent">
         <div className="text-xl md:text-2xl font-black tracking-tighter cursor-pointer text-white italic" onClick={() => {setActiveCatalogue(null); setSearchQuery('');}}>VLK²</div>
         
         <div className="flex items-center gap-4 md:gap-8">
-          {/* SEARCH FIELD */}
           <input 
             type="text" 
             placeholder="SEARCH_" 
@@ -123,17 +134,15 @@ export default function Home() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-10 pt-32 md:pt-48 pb-10">
         {searchQuery ? (
-          /* SEARCH VIEW */
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 animate-in fade-in duration-500">
             {filteredProducts.map(p => (
-              <div key={p.id} onClick={() => setSelectedProduct(p)} className="cursor-pointer group text-center">
+              <div key={p.id} onClick={() => handleProductClick(p)} className="cursor-pointer group text-center">
                 <img src={p.image_url} className="w-full h-auto drop-shadow-[0_0_15px_rgba(212,175,55,0.15)] group-hover:scale-105 transition-all" />
                 <p className="mt-4 text-[10px] font-bold uppercase text-white tracking-widest">{p.name}</p>
               </div>
             ))}
           </div>
         ) : !activeCatalogue ? (
-          /* COLLECTIONS VIEW */
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-10">
             {catalogues.map((cat) => (
               <div key={cat.id} onClick={() => setActiveCatalogue(cat)} className="group border border-white/5 h-[300px] md:h-[500px] flex flex-col items-center justify-center cursor-pointer hover:border-[#D4AF37]/40 transition-all bg-black/40 relative overflow-hidden">
@@ -143,12 +152,11 @@ export default function Home() {
             ))}
           </div>
         ) : (
-          /* PRODUCTS VIEW */
           <div className="animate-in fade-in duration-700">
             <button onClick={() => setActiveCatalogue(null)} className="mb-8 text-[8px] md:text-[9px] uppercase tracking-[0.4em] opacity-40 hover:opacity-100">← Back to Collections</button>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-12">
               {activeCatalogue.products?.map((item: any) => (
-                <div key={item.id} className="p-4 group text-center cursor-pointer" onClick={() => setSelectedProduct(item)}>
+                <div key={item.id} className="p-4 group text-center cursor-pointer" onClick={() => handleProductClick(item)}>
                    <img src={item.image_url} alt={item.name} className="w-full h-auto object-contain drop-shadow-[0_0_10px_rgba(0,0,0,0.5)] group-hover:drop-shadow-[0_0_20px_rgba(212,175,55,0.2)] transition-all duration-500" />
                    <h3 className="text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-white font-black mt-6">{item.name}</h3>
                    <p className="text-sm font-light mt-2 opacity-60 text-[#D4AF37]">${item.price}</p>
@@ -159,36 +167,56 @@ export default function Home() {
         )}
       </div>
 
-      {/* PRODUCT PICKER MODAL */}
+      {/* PRODUCT PICKER MODAL - WITH IMAGE SWAPPING */}
       {selectedProduct && (
         <div className="fixed inset-0 z-[150] bg-black/95 flex items-center justify-center p-6">
           <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-12">
             <div className="flex items-center justify-center">
-              <img src={selectedProduct.image_url} className="max-h-[50vh] w-auto drop-shadow-[0_0_30px_rgba(212,175,55,0.2)]" />
+              {/* Image swaps and animates when activeImage changes */}
+              <img 
+                key={activeImage} 
+                src={activeImage} 
+                onError={(e) => { e.currentTarget.src = selectedProduct.image_url }}
+                className="max-h-[50vh] w-auto drop-shadow-[0_0_30px_rgba(212,175,55,0.2)] animate-in fade-in zoom-in-95 duration-500" 
+              />
             </div>
             <div className="flex flex-col justify-center">
               <button onClick={() => setSelectedProduct(null)} className="text-left text-[10px] mb-8 opacity-40 hover:opacity-100 tracking-widest">← RETURN</button>
-              <h2 className="text-3xl font-black text-white italic mb-2 uppercase">{selectedProduct.name}</h2>
+              <h2 className="text-3xl font-black text-white italic mb-2 uppercase tracking-tighter">
+                {selectedProduct.name} {selectedColor && <span className="text-[#D4AF37] opacity-60">/ {selectedColor}</span>}
+              </h2>
               <p className="text-xl mb-10 text-[#D4AF37] font-bold">${selectedProduct.price}</p>
               
               <div className="space-y-6">
                 <div>
-                  <p className="text-[9px] uppercase tracking-widest mb-3 opacity-40">Color</p>
+                  <p className="text-[9px] uppercase tracking-widest mb-3 opacity-40">Select Color</p>
                   <div className="flex gap-2">
                     {['BLACK', 'GOLD', 'CREAM'].map(c => (
-                      <button key={c} onClick={() => setSelectedColor(c)} className={`px-4 py-2 text-[9px] border ${selectedColor === c ? 'border-[#D4AF37] bg-[#D4AF37] text-black' : 'border-white/10 text-white'}`}>{c}</button>
+                      <button 
+                        key={c} 
+                        onClick={() => handleColorChange(c)} 
+                        className={`px-4 py-2 text-[9px] border transition-all ${selectedColor === c ? 'border-[#D4AF37] bg-[#D4AF37] text-black' : 'border-white/10 text-white'}`}
+                      >
+                        {c}
+                      </button>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <p className="text-[9px] uppercase tracking-widest mb-3 opacity-40">Size</p>
+                  <p className="text-[9px] uppercase tracking-widest mb-3 opacity-40">Select Size</p>
                   <div className="flex gap-2">
                     {['S', 'M', 'L', 'XL'].map(s => (
-                      <button key={s} onClick={() => setSelectedSize(s)} className={`w-10 h-10 text-[9px] border ${selectedSize === s ? 'border-[#D4AF37] bg-[#D4AF37] text-black' : 'border-white/10 text-white'}`}>{s}</button>
+                      <button 
+                        key={s} 
+                        onClick={() => setSelectedSize(s)} 
+                        className={`w-10 h-10 text-[9px] border transition-all ${selectedSize === s ? 'border-[#D4AF37] bg-[#D4AF37] text-black' : 'border-white/10 text-white'}`}
+                      >
+                        {s}
+                      </button>
                     ))}
                   </div>
                 </div>
-                <button onClick={addToCart} className="w-full py-5 bg-[#D4AF37] text-black font-black uppercase tracking-[0.4em] text-[10px] hover:bg-white transition-all mt-4">ADD TO ARCHIVE</button>
+                <button onClick={addToCart} className="w-full py-5 bg-[#D4AF37] text-black font-black uppercase tracking-[0.4em] text-[10px] hover:bg-white transition-all mt-4 active:scale-95">ADD TO ARCHIVE</button>
               </div>
             </div>
           </div>
