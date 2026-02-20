@@ -22,12 +22,16 @@ export default function Home() {
   const [cardDetails, setCardDetails] = useState({ number: '', expiry: '', cvc: '' });
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // FIX: Handle browser navigation properly
   useEffect(() => {
+    // Set initial state so "Back" to home works
+    window.history.replaceState({ view: 'CATALOGUE', cat: null, prod: null }, "");
+
     const handlePopState = (event: any) => {
       if (event.state) {
-        setView(event.state.view);
-        setActiveCat(event.state.cat);
-        setSelectedProduct(event.state.prod);
+        setView(event.state.view || 'CATALOGUE');
+        setActiveCat(event.state.cat || null);
+        setSelectedProduct(event.state.prod || null);
         if (event.state.prod) setActiveImage(event.state.prod.image_url);
       } else {
         setView('CATALOGUE');
@@ -62,17 +66,15 @@ export default function Home() {
     if (!selectedSize) return alert("SELECT SIZE");
     setCart([...cart, { ...selectedProduct, selectedSize, activeImage, selectedColor }]);
     setSelectedSize('');
-    setIsCartOpen(true);
+    // Removed setIsCartOpen(true) so it doesn't pop up automatically
   };
 
-  // FINAL ORDER SUBMISSION
   const submitOrder = async () => {
     setIsProcessing(true);
-    
     const orderData = {
       items: cart,
       total: cart.reduce((acc, curr) => acc + Number(curr.price), 0),
-      payment_info: paymentMethod === 'MPESA' ? { method: 'MPESA', phone: phoneNumber } : { method: 'VISA', card: '**** **** **** ' + cardDetails.number.slice(-4) },
+      payment_info: paymentMethod === 'MPESA' ? { method: 'MPESA', phone: phoneNumber } : { method: 'VISA', card: '****' + cardDetails.number.slice(-4) },
       status: 'pending_admin_approval',
       created_at: new Date()
     };
@@ -198,13 +200,12 @@ export default function Home() {
         )}
       </div>
 
-      {/* PAYMENT MODAL (M-PESA / VISA / PAYBILL) */}
+      {/* PAYMENT MODAL */}
       {showPaymentModal && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-6">
           <div className="absolute inset-0 bg-black/95 backdrop-blur-md" onClick={() => setShowPaymentModal(false)} />
           <div className="relative w-full max-w-md bg-black border border-white/10 p-10 rounded-3xl">
             <h2 className="text-2xl font-black uppercase italic mb-8">Payment Details</h2>
-            
             {paymentMethod === 'NONE' && (
               <div className="space-y-4">
                 <button onClick={() => setPaymentMethod('MPESA')} className="w-full p-6 border border-white/10 rounded-2xl flex justify-between items-center hover:bg-green-600 transition-all group">
@@ -217,55 +218,42 @@ export default function Home() {
                 </button>
               </div>
             )}
-
             {paymentMethod === 'MPESA' && (
               <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black opacity-40 uppercase">Phone Number</label>
-                  <input type="text" placeholder="254..." className="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none focus:border-pink-500"
-                         value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
-                </div>
-                <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                   <p className="text-[10px] opacity-60">Manual Paybill: <span className="text-white font-bold tracking-widest">400200</span></p>
-                </div>
+                <input type="text" placeholder="PHONE NUMBER (254...)" className="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none"
+                       value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
                 <button onClick={submitOrder} disabled={isProcessing} className="w-full py-4 bg-green-600 text-white font-black uppercase tracking-widest rounded-xl">
                   {isProcessing ? "PROCESSING..." : "CONFIRM & PAY"}
                 </button>
               </div>
             )}
-
             {paymentMethod === 'VISA' && (
               <div className="space-y-4">
                 <input type="text" placeholder="CARD NUMBER" className="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none"
                        onChange={(e) => setCardDetails({...cardDetails, number: e.target.value})} />
-                <div className="flex gap-4">
-                  <input type="text" placeholder="MM/YY" className="w-1/2 bg-white/5 border border-white/10 p-4 rounded-xl outline-none" />
-                  <input type="text" placeholder="CVC" className="w-1/2 bg-white/5 border border-white/10 p-4 rounded-xl outline-none" />
-                </div>
                 <button onClick={submitOrder} disabled={isProcessing} className="w-full py-4 bg-pink-500 text-black font-black uppercase tracking-widest rounded-xl">
-                  {isProcessing ? "PROCESSING..." : "AUTHORIZE PAYMENT"}
+                  {isProcessing ? "PROCESSING..." : "AUTHORIZE"}
                 </button>
               </div>
             )}
-
-            <button onClick={() => setPaymentMethod('NONE')} className="w-full mt-6 text-[10px] opacity-40 uppercase font-black hover:opacity-100">Back</button>
+            <button onClick={() => setPaymentMethod('NONE')} className="w-full mt-6 text-[10px] opacity-40 uppercase font-black">Back</button>
           </div>
         </div>
       )}
 
-      {/* CART DRAWER */}
+      {/* CART DRAWER (This is where "Proceed to Payment" lives) */}
       {isCartOpen && (
         <div className="fixed inset-0 z-[200] flex justify-end">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsCartOpen(false)} />
           <div className="relative w-full max-w-md bg-black border-l border-white/10 h-full p-10 flex flex-col">
             <h2 className="text-[14px] font-black tracking-[0.5em] uppercase italic mb-10">Current Bag</h2>
-            <div className="flex-1 overflow-y-auto space-y-6 text-white">
+            <div className="flex-1 overflow-y-auto space-y-6">
               {cart.map((item, i) => (
                 <div key={i} className="flex gap-4 items-center border-b border-white/5 pb-4">
                   <img src={item.activeImage} className="w-16 h-20 object-contain" />
-                  <div className="flex-1">
-                    <p className="text-[10px] font-black uppercase">{item.name}</p>
-                    <p className="text-[9px] text-pink-500 uppercase">{item.selectedSize} / {item.selectedColor}</p>
+                  <div className="flex-1 text-[10px] font-black uppercase">
+                    <p>{item.name}</p>
+                    <p className="text-pink-500">{item.selectedSize}</p>
                   </div>
                   <p className="font-bold">£{item.price}</p>
                 </div>
