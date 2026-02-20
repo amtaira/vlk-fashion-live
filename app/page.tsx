@@ -10,11 +10,10 @@ export default function Home() {
   const [activeCat, setActiveCat] = useState<any>(null);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [activeImage, setActiveImage] = useState('');
-  const [selectedSize, setSelectedSize] = useState('');
+  const [selectedColor, setSelectedColor] = useState('');
   const [cart, setCart] = useState<any[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [showPaymentPrompt, setShowPaymentPrompt] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedSize, setSelectedSize] = useState('');
 
   useEffect(() => {
     const handlePopState = (event: any) => {
@@ -37,7 +36,10 @@ export default function Home() {
     setView(newView);
     setActiveCat(cat);
     setSelectedProduct(prod);
-    if (prod) setActiveImage(prod.image_url);
+    if (prod) {
+      setActiveImage(prod.image_url);
+      setSelectedColor(prod.variants?.[0]?.color || 'OG');
+    }
     window.history.pushState({ view: newView, cat, prod }, "");
   };
 
@@ -49,145 +51,128 @@ export default function Home() {
     fetchData();
   }, []);
 
-  const handleFinalPayment = async (method: string) => {
-    setIsProcessing(true);
-    const orderData = {
-      items: cart,
-      total: cart.reduce((acc, curr) => acc + Number(curr.price), 0),
-      payment_method: method,
-      status: 'pending_admin_approval',
-      created_at: new Date()
-    };
-    const { error } = await supabase.from('orders').insert([orderData]);
-    if (!error) {
-      alert(`VLK²: Order sent to Admin via ${method}!`);
-      setCart([]);
-      setShowPaymentPrompt(false);
-      setIsCartOpen(false);
-    }
-    setIsProcessing(false);
+  const addToBag = () => {
+    if (!selectedSize) return alert("SELECT SIZE");
+    setCart([...cart, { ...selectedProduct, selectedSize, activeImage }]);
+    setSelectedSize('');
+    setIsCartOpen(true);
   };
 
   return (
-    <main className="min-h-screen bg-black text-white font-mono selection:bg-pink-500">
-      {/* BACKGROUND IMAGE (Dialogue View Only) */}
-      {view === 'CATALOGUE' && (
-        <div className="fixed inset-0 -z-10 opacity-30 bg-cover bg-center grayscale" 
-             style={{ backgroundImage: "url('/hero-bg.jpg')" }} />
-      )}
+    <main className="min-h-screen text-white relative overflow-x-hidden font-sans">
+      <div className="fixed inset-0 -z-10 bg-black" />
+      <div className="fixed inset-0 -z-10 opacity-20 bg-cover bg-center grayscale pointer-events-none" 
+           style={{ backgroundImage: "url('/hero-bg.jpg')" }} />
 
-      {/* 1. PERSISTENT SIDEBAR */}
-      <aside className="fixed left-0 top-0 h-full w-48 border-r border-white/5 z-50 pt-32 px-6 hidden lg:flex flex-col">
-        <p className="text-[10px] font-black opacity-30 mb-8 tracking-[0.3em] uppercase underline">Archives</p>
-        <div className="flex flex-col gap-4 flex-1">
-          {catalogues.map(cat => (
-            <button key={cat.id} onClick={() => navigate('GRID', cat)}
-              className={`text-left text-[11px] uppercase tracking-widest hover:text-pink-500 transition-colors ${activeCat?.id === cat.id ? 'text-pink-500 font-bold' : 'opacity-60'}`}>
-              {cat.name}
-            </button>
-          ))}
-        </div>
-        <div className="pb-10 space-y-4">
-          <p className="text-[9px] font-black opacity-20 uppercase tracking-widest">Connect</p>
-          <div className="flex flex-col gap-2 text-[10px] uppercase font-bold">
-            <a href="#" className="hover:text-pink-500">Instagram</a>
-            <a href="#" className="hover:text-pink-500">Twitter/X</a>
-          </div>
-        </div>
-      </aside>
-
-      {/* 2. HEADER */}
-      <nav className="fixed top-0 w-full z-[100] px-10 py-8 flex justify-between items-center bg-black/50 backdrop-blur-md">
-        <div className="font-black text-white text-2xl tracking-tighter cursor-pointer hover:italic" onClick={() => navigate('CATALOGUE')}>VLK²</div>
+      {/* HEADER */}
+      <nav className="fixed top-0 w-full z-[100] px-10 py-8 flex justify-between items-center">
+        <div className="font-black text-pink-500 border border-pink-500 rounded-full w-10 h-10 flex items-center justify-center cursor-pointer hover:bg-pink-500 hover:text-black transition-all" 
+             onClick={() => navigate('CATALOGUE')}>BP</div>
+        
         <button onClick={() => setIsCartOpen(true)} className="flex items-center gap-2 group">
-          <span className="text-[11px] font-black tracking-[0.3em]">BAG ({cart.length})</span>
+          <span className="text-[11px] font-black tracking-[0.3em]">BAG</span>
+          <span className="bg-pink-500 text-black text-[10px] w-6 h-6 flex items-center justify-center rounded-full font-bold">
+            {cart.length}
+          </span>
         </button>
       </nav>
 
-      {/* 3. MAIN CONTENT */}
-      <div className="lg:pl-48 pt-32 px-6 md:px-10 pb-20">
+      <div className="pt-32 px-6 md:px-10 pb-20">
         
-        {/* VIEW: CATALOGUE (DIALOGUE BOXES) */}
+        {/* VIEW 1: CATALOGUE */}
         {view === 'CATALOGUE' && (
-          <div className="flex flex-wrap gap-8 justify-center items-center mt-20 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-6xl mx-auto">
             {catalogues.map(cat => (
               <div key={cat.id} onClick={() => navigate('GRID', cat)} 
-                   className="w-full max-w-xs border-2 border-white bg-black/90 p-10 cursor-pointer hover:bg-white hover:text-black transition-all group shadow-[8px_8px_0px_#ec4899]">
-                <h2 className="text-3xl font-black uppercase italic tracking-tighter group-hover:scale-105 transition-transform">{cat.name}</h2>
-                <div className="mt-4 text-[10px] font-bold border border-current inline-block px-2 py-1">OPEN FOLDER</div>
+                   className="h-96 border border-white/10 rounded-[40px] flex flex-col items-center justify-center cursor-pointer hover:bg-white/5 transition-all group">
+                <h2 className="text-3xl font-black tracking-[0.4em] uppercase group-hover:text-pink-500 transition-colors">{cat.name}</h2>
+                <div className="mt-4 h-[1px] w-12 bg-pink-500 transition-all group-hover:w-24" />
               </div>
             ))}
           </div>
         )}
 
-        {/* VIEW: GRID (PRODUCT LIST) */}
+        {/* VIEW 2: GRID */}
         {view === 'GRID' && (
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-8">
-            {activeCat?.products?.map((p: any) => (
-              <div key={p.id} onClick={() => navigate('DETAIL', activeCat, p)} className="cursor-pointer group">
-                <div className="aspect-[4/5] bg-zinc-900/50 flex items-center justify-center overflow-hidden border border-white/5">
-                  <img src={p.image_url} className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform" />
+          <div className="max-w-7xl mx-auto">
+            <button onClick={() => window.history.back()} className="mb-10 text-[10px] font-black opacity-40 hover:opacity-100 uppercase tracking-widest flex items-center gap-2">
+              ← Return
+            </button>
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
+              {activeCat?.products?.map((p: any) => (
+                <div key={p.id} onClick={() => navigate('DETAIL', activeCat, p)} className="cursor-pointer group text-center">
+                  <div className="aspect-[4/5] flex items-center justify-center transition-all group-hover:scale-105">
+                    <img src={p.image_url} className="max-h-full object-contain drop-shadow-2xl" />
+                  </div>
+                  <h3 className="mt-8 text-[11px] font-black uppercase tracking-widest">{p.name}</h3>
+                  <p className="text-pink-500 font-bold mt-2 text-sm">£{p.price}.00</p>
                 </div>
-                <div className="mt-4 flex justify-between items-start">
-                  <p className="text-[10px] font-black uppercase tracking-widest max-w-[70%]">{p.name}</p>
-                  <p className="text-[10px] font-bold opacity-60">£{p.price}</p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
 
-        {/* VIEW: DETAIL (RELATIVE LAYOUT) */}
+        {/* VIEW 3: DETAIL (UPDATED SIDE-BY-SIDE LAYOUT) */}
         {view === 'DETAIL' && selectedProduct && (
-          <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12">
+          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-20 items-start">
             
-            {/* LEFT: IMAGE COLUMN (Relative Size) */}
-            <div className="flex flex-col gap-6">
-              <div className="relative aspect-square bg-zinc-900/30 border border-white/5 flex items-center justify-center max-h-[60vh]">
-                <img src={activeImage} className="max-h-full max-w-full object-contain p-6" />
+            {/* LEFT: IMAGE COLUMN */}
+            <div className="lg:col-span-7 space-y-8">
+              <div className="flex items-center justify-center min-h-[400px] lg:min-h-[600px]">
+                <img src={activeImage} className="w-full max-h-[70vh] object-contain drop-shadow-[0_20px_60px_rgba(0,0,0,0.7)]" />
               </div>
-              <div className="grid grid-cols-4 gap-4">
-                {selectedProduct.variants?.map((v: any, idx: number) => (
-                  <button key={idx} onClick={() => setActiveImage(v.url)} 
-                          className={`aspect-square border p-1 bg-zinc-900 ${activeImage === v.url ? 'border-pink-500' : 'border-white/5 opacity-50'}`}>
-                    <img src={v.url} className="w-full h-full object-contain" />
-                  </button>
-                ))}
+              
+              {/* Secondary Thumbnails (Reference Screenshot) */}
+              <div className="flex justify-center gap-4">
+                 {selectedProduct.variants?.map((v: any, idx: number) => (
+                   <img key={idx} src={v.url} onClick={() => setActiveImage(v.url)} 
+                        className={`w-20 h-24 object-contain cursor-pointer border p-1 transition-all ${activeImage === v.url ? 'border-pink-500 bg-white/5' : 'border-transparent opacity-50'}`} />
+                 ))}
               </div>
             </div>
 
             {/* RIGHT: INFO COLUMN */}
-            <div className="space-y-10">
+            <div className="lg:col-span-5 space-y-12 lg:pt-10">
+              <header className="space-y-4">
+                <h1 className="text-6xl lg:text-7xl font-black uppercase tracking-tighter italic">{selectedProduct.name}</h1>
+                <p className="text-4xl font-bold tracking-tight">£{selectedProduct.price}.00</p>
+              </header>
+
+              {/* COLOR SELECTION */}
               <div className="space-y-4">
-                <h1 className="text-5xl font-black uppercase italic tracking-tighter leading-none">{selectedProduct.name}</h1>
-                <p className="text-2xl font-bold opacity-80">£{selectedProduct.price}.00</p>
+                <p className="text-[10px] font-black text-white/40 tracking-[0.3em] uppercase">Active Style: {selectedColor}</p>
+                <div className="flex gap-2">
+                  {selectedProduct.variants?.map((v: any) => (
+                    <button key={v.color} onClick={() => {setActiveImage(v.url); setSelectedColor(v.color);}} 
+                            className={`w-14 h-14 border-2 p-1 transition-all ${selectedColor === v.color ? 'border-pink-500' : 'border-white/10 opacity-40'}`}>
+                      <img src={v.url} className="w-full h-full object-contain" />
+                    </button>
+                  ))}
+                </div>
               </div>
 
+              {/* SIZE SELECTION */}
               <div className="space-y-4">
-                <p className="text-[10px] font-black opacity-30 uppercase tracking-[0.2em]">Select Size</p>
-                <div className="grid grid-cols-5 border border-white/10">
+                <p className="text-[10px] font-black text-pink-500 tracking-[0.3em] uppercase">Select Size</p>
+                <div className="flex flex-wrap gap-2">
                   {['S', 'M', 'L', 'XL', 'XXL'].map(s => (
                     <button key={s} onClick={() => setSelectedSize(s)} 
-                      className={`py-4 text-[11px] font-black border-r border-white/10 last:border-0 transition-all ${selectedSize === s ? 'bg-white text-black' : 'hover:bg-white/5'}`}>
+                            className={`w-16 h-16 border flex items-center justify-center text-[12px] font-black transition-all relative ${selectedSize === s ? 'border-pink-500 bg-pink-500 text-black' : 'border-white/10 text-white/40 hover:border-white'}`}>
+                      {selectedSize !== s && <div className="absolute inset-0 flex items-center justify-center opacity-10"><div className="w-full h-[1px] bg-pink-500 -rotate-45" /></div>}
                       {s}
                     </button>
                   ))}
                 </div>
               </div>
 
-              <button 
-                onClick={() => {
-                  if(!selectedSize) return alert("CHOOSE SIZE");
-                  setCart([...cart, {...selectedProduct, selectedSize, activeImage}]);
-                  setIsCartOpen(true);
-                }}
-                className="w-full py-6 bg-pink-500 text-black font-black uppercase tracking-[0.3em] hover:bg-white transition-all text-sm"
-              >
+              {/* ADD TO BAG ACTION */}
+              <button onClick={addToBag} className="w-full py-6 bg-white text-black font-black text-[14px] tracking-[0.4em] hover:bg-pink-500 transition-all uppercase">
                 Add to Bag
               </button>
 
-              <div className="pt-10 border-t border-white/5 text-[11px] leading-relaxed opacity-40 uppercase space-y-4 font-bold">
-                <p>• {selectedProduct.description || "440GSM Heavyweight Luxury Cotton"}</p>
+              {/* DESCRIPTION BULLETS */}
+              <div className="pt-10 border-t border-white/5 space-y-4 opacity-50 text-[10px] font-black uppercase tracking-widest">
+                <p>• {selectedProduct.description || "450GSM Luxury Weight Cotton"}</p>
                 <p>• Intricate Puff-Print Detailing</p>
                 <p className="text-pink-500">• Boxy Relaxed Fit - True to size</p>
               </div>
@@ -196,44 +181,32 @@ export default function Home() {
         )}
       </div>
 
-      {/* 4. PAYMENT MODAL */}
-      {showPaymentPrompt && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-black/95 backdrop-blur-xl">
-          <div className="relative w-full max-w-sm border-2 border-white p-10 space-y-8 bg-black">
-            <h2 className="text-2xl font-black uppercase italic mb-8 underline">Payment Method</h2>
-            <div className="space-y-3">
-              <button onClick={() => handleFinalPayment('VISA')} className="w-full p-4 border border-white/20 hover:bg-white hover:text-black font-bold uppercase text-xs">Visa / Card</button>
-              <button onClick={() => handleFinalPayment('M-PESA')} className="w-full p-4 border border-white/20 hover:bg-white hover:text-black font-bold uppercase text-xs text-green-500">M-Pesa Paybill</button>
-            </div>
-            <button onClick={() => setShowPaymentPrompt(false)} className="w-full text-[10px] opacity-30 uppercase">Cancel</button>
-          </div>
-        </div>
-      )}
-
-      {/* 5. CART DRAWER */}
+      {/* CART DRAWER */}
       {isCartOpen && (
         <div className="fixed inset-0 z-[200] flex justify-end">
-          <div className="absolute inset-0 bg-black/80" onClick={() => setIsCartOpen(false)} />
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsCartOpen(false)} />
           <div className="relative w-full max-w-md bg-black border-l border-white/10 h-full p-10 flex flex-col">
-            <h2 className="text-[14px] font-black tracking-[0.5em] uppercase italic mb-10 underline">The Bag</h2>
+            <h2 className="text-[14px] font-black tracking-[0.5em] uppercase italic mb-10">Current Bag</h2>
             <div className="flex-1 overflow-y-auto space-y-6">
               {cart.map((item, i) => (
-                <div key={i} className="flex gap-4 border-b border-white/5 pb-4">
-                  <img src={item.activeImage} className="w-16 h-20 object-contain bg-zinc-900" />
-                  <div className="flex-1 text-[10px] uppercase font-black">
-                    <p>{item.name}</p>
-                    <p className="text-pink-500 mt-1">{item.selectedSize}</p>
-                    <p className="mt-2 opacity-60">£{item.price}.00</p>
+                <div key={i} className="flex gap-4 items-center border-b border-white/5 pb-4">
+                  <img src={item.activeImage} className="w-16 h-20 object-contain" />
+                  <div className="flex-1">
+                    <p className="text-[10px] font-black uppercase">{item.name}</p>
+                    <p className="text-[9px] text-pink-500 uppercase">{item.selectedSize}</p>
                   </div>
+                  <p className="font-bold">£{item.price}</p>
                 </div>
               ))}
             </div>
             <div className="pt-10 space-y-4">
-              <div className="flex justify-between font-black text-xl">
+              <div className="flex justify-between font-black text-xl border-t border-white/10 pt-4">
                 <span>TOTAL</span>
                 <span>£{cart.reduce((acc, curr) => acc + Number(curr.price), 0)}</span>
               </div>
-              <button onClick={() => setShowPaymentPrompt(true)} className="w-full py-5 bg-pink-500 text-black font-black uppercase tracking-widest text-sm">Proceed to Payment</button>
+              <button className="w-full py-5 bg-pink-500 text-black font-black tracking-widest uppercase hover:bg-white transition-all">
+                Proceed to Payment
+              </button>
             </div>
           </div>
         </div>
