@@ -15,6 +15,13 @@ export default function Home() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState('');
 
+  // PAYMENT STATES
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'NONE' | 'MPESA' | 'VISA'>('NONE');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [cardDetails, setCardDetails] = useState({ number: '', expiry: '', cvc: '' });
+  const [isProcessing, setIsProcessing] = useState(false);
+
   useEffect(() => {
     const handlePopState = (event: any) => {
       if (event.state) {
@@ -53,9 +60,35 @@ export default function Home() {
 
   const addToBag = () => {
     if (!selectedSize) return alert("SELECT SIZE");
-    setCart([...cart, { ...selectedProduct, selectedSize, activeImage }]);
+    setCart([...cart, { ...selectedProduct, selectedSize, activeImage, selectedColor }]);
     setSelectedSize('');
     setIsCartOpen(true);
+  };
+
+  // FINAL ORDER SUBMISSION
+  const submitOrder = async () => {
+    setIsProcessing(true);
+    
+    const orderData = {
+      items: cart,
+      total: cart.reduce((acc, curr) => acc + Number(curr.price), 0),
+      payment_info: paymentMethod === 'MPESA' ? { method: 'MPESA', phone: phoneNumber } : { method: 'VISA', card: '**** **** **** ' + cardDetails.number.slice(-4) },
+      status: 'pending_admin_approval',
+      created_at: new Date()
+    };
+
+    const { error } = await supabase.from('orders').insert([orderData]);
+
+    if (!error) {
+      alert("VLK²: Payment Confirmed. Order sent to Admin!");
+      setCart([]);
+      setShowPaymentModal(false);
+      setPaymentMethod('NONE');
+      setIsCartOpen(false);
+    } else {
+      alert("Error sending order.");
+    }
+    setIsProcessing(false);
   };
 
   return (
@@ -67,7 +100,7 @@ export default function Home() {
       {/* HEADER */}
       <nav className="fixed top-0 w-full z-[100] px-10 py-8 flex justify-between items-center">
         <div className="font-black text-pink-500 border border-pink-500 rounded-full w-10 h-10 flex items-center justify-center cursor-pointer hover:bg-pink-500 hover:text-black transition-all" 
-             onClick={() => navigate('CATALOGUE')}>BP</div>
+             onClick={() => navigate('CATALOGUE')}>VLK²</div>
         
         <button onClick={() => setIsCartOpen(true)} className="flex items-center gap-2 group">
           <span className="text-[11px] font-black tracking-[0.3em]">BAG</span>
@@ -112,17 +145,13 @@ export default function Home() {
           </div>
         )}
 
-        {/* VIEW 3: DETAIL (UPDATED SIDE-BY-SIDE LAYOUT) */}
+        {/* VIEW 3: DETAIL */}
         {view === 'DETAIL' && selectedProduct && (
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-20 items-start">
-            
-            {/* LEFT: IMAGE COLUMN */}
             <div className="lg:col-span-7 space-y-8">
               <div className="flex items-center justify-center min-h-[400px] lg:min-h-[600px]">
                 <img src={activeImage} className="w-full max-h-[70vh] object-contain drop-shadow-[0_20px_60px_rgba(0,0,0,0.7)]" />
               </div>
-              
-              {/* Secondary Thumbnails (Reference Screenshot) */}
               <div className="flex justify-center gap-4">
                  {selectedProduct.variants?.map((v: any, idx: number) => (
                    <img key={idx} src={v.url} onClick={() => setActiveImage(v.url)} 
@@ -131,14 +160,12 @@ export default function Home() {
               </div>
             </div>
 
-            {/* RIGHT: INFO COLUMN */}
             <div className="lg:col-span-5 space-y-12 lg:pt-10">
               <header className="space-y-4">
                 <h1 className="text-6xl lg:text-7xl font-black uppercase tracking-tighter italic">{selectedProduct.name}</h1>
                 <p className="text-4xl font-bold tracking-tight">£{selectedProduct.price}.00</p>
               </header>
 
-              {/* COLOR SELECTION */}
               <div className="space-y-4">
                 <p className="text-[10px] font-black text-white/40 tracking-[0.3em] uppercase">Active Style: {selectedColor}</p>
                 <div className="flex gap-2">
@@ -151,35 +178,80 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* SIZE SELECTION */}
               <div className="space-y-4">
                 <p className="text-[10px] font-black text-pink-500 tracking-[0.3em] uppercase">Select Size</p>
                 <div className="flex flex-wrap gap-2">
                   {['S', 'M', 'L', 'XL', 'XXL'].map(s => (
                     <button key={s} onClick={() => setSelectedSize(s)} 
                             className={`w-16 h-16 border flex items-center justify-center text-[12px] font-black transition-all relative ${selectedSize === s ? 'border-pink-500 bg-pink-500 text-black' : 'border-white/10 text-white/40 hover:border-white'}`}>
-                      {selectedSize !== s && <div className="absolute inset-0 flex items-center justify-center opacity-10"><div className="w-full h-[1px] bg-pink-500 -rotate-45" /></div>}
                       {s}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* ADD TO BAG ACTION */}
               <button onClick={addToBag} className="w-full py-6 bg-white text-black font-black text-[14px] tracking-[0.4em] hover:bg-pink-500 transition-all uppercase">
                 Add to Bag
               </button>
-
-              {/* DESCRIPTION BULLETS */}
-              <div className="pt-10 border-t border-white/5 space-y-4 opacity-50 text-[10px] font-black uppercase tracking-widest">
-                <p>• {selectedProduct.description || "450GSM Luxury Weight Cotton"}</p>
-                <p>• Intricate Puff-Print Detailing</p>
-                <p className="text-pink-500">• Boxy Relaxed Fit - True to size</p>
-              </div>
             </div>
           </div>
         )}
       </div>
+
+      {/* PAYMENT MODAL (M-PESA / VISA / PAYBILL) */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-6">
+          <div className="absolute inset-0 bg-black/95 backdrop-blur-md" onClick={() => setShowPaymentModal(false)} />
+          <div className="relative w-full max-w-md bg-black border border-white/10 p-10 rounded-3xl">
+            <h2 className="text-2xl font-black uppercase italic mb-8">Payment Details</h2>
+            
+            {paymentMethod === 'NONE' && (
+              <div className="space-y-4">
+                <button onClick={() => setPaymentMethod('MPESA')} className="w-full p-6 border border-white/10 rounded-2xl flex justify-between items-center hover:bg-green-600 transition-all group">
+                  <span className="font-bold">M-PESA</span>
+                  <span className="text-[10px] opacity-40 group-hover:opacity-100">STK PUSH</span>
+                </button>
+                <button onClick={() => setPaymentMethod('VISA')} className="w-full p-6 border border-white/10 rounded-2xl flex justify-between items-center hover:bg-white hover:text-black transition-all">
+                  <span className="font-bold">CARD / VISA</span>
+                  <span className="text-[10px] opacity-40">DEBIT</span>
+                </button>
+              </div>
+            )}
+
+            {paymentMethod === 'MPESA' && (
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black opacity-40 uppercase">Phone Number</label>
+                  <input type="text" placeholder="254..." className="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none focus:border-pink-500"
+                         value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
+                </div>
+                <div className="p-4 bg-white/5 rounded-xl border border-white/5">
+                   <p className="text-[10px] opacity-60">Manual Paybill: <span className="text-white font-bold tracking-widest">400200</span></p>
+                </div>
+                <button onClick={submitOrder} disabled={isProcessing} className="w-full py-4 bg-green-600 text-white font-black uppercase tracking-widest rounded-xl">
+                  {isProcessing ? "PROCESSING..." : "CONFIRM & PAY"}
+                </button>
+              </div>
+            )}
+
+            {paymentMethod === 'VISA' && (
+              <div className="space-y-4">
+                <input type="text" placeholder="CARD NUMBER" className="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none"
+                       onChange={(e) => setCardDetails({...cardDetails, number: e.target.value})} />
+                <div className="flex gap-4">
+                  <input type="text" placeholder="MM/YY" className="w-1/2 bg-white/5 border border-white/10 p-4 rounded-xl outline-none" />
+                  <input type="text" placeholder="CVC" className="w-1/2 bg-white/5 border border-white/10 p-4 rounded-xl outline-none" />
+                </div>
+                <button onClick={submitOrder} disabled={isProcessing} className="w-full py-4 bg-pink-500 text-black font-black uppercase tracking-widest rounded-xl">
+                  {isProcessing ? "PROCESSING..." : "AUTHORIZE PAYMENT"}
+                </button>
+              </div>
+            )}
+
+            <button onClick={() => setPaymentMethod('NONE')} className="w-full mt-6 text-[10px] opacity-40 uppercase font-black hover:opacity-100">Back</button>
+          </div>
+        </div>
+      )}
 
       {/* CART DRAWER */}
       {isCartOpen && (
@@ -187,13 +259,13 @@ export default function Home() {
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsCartOpen(false)} />
           <div className="relative w-full max-w-md bg-black border-l border-white/10 h-full p-10 flex flex-col">
             <h2 className="text-[14px] font-black tracking-[0.5em] uppercase italic mb-10">Current Bag</h2>
-            <div className="flex-1 overflow-y-auto space-y-6">
+            <div className="flex-1 overflow-y-auto space-y-6 text-white">
               {cart.map((item, i) => (
                 <div key={i} className="flex gap-4 items-center border-b border-white/5 pb-4">
                   <img src={item.activeImage} className="w-16 h-20 object-contain" />
                   <div className="flex-1">
                     <p className="text-[10px] font-black uppercase">{item.name}</p>
-                    <p className="text-[9px] text-pink-500 uppercase">{item.selectedSize}</p>
+                    <p className="text-[9px] text-pink-500 uppercase">{item.selectedSize} / {item.selectedColor}</p>
                   </div>
                   <p className="font-bold">£{item.price}</p>
                 </div>
@@ -204,7 +276,7 @@ export default function Home() {
                 <span>TOTAL</span>
                 <span>£{cart.reduce((acc, curr) => acc + Number(curr.price), 0)}</span>
               </div>
-              <button className="w-full py-5 bg-pink-500 text-black font-black tracking-widest uppercase hover:bg-white transition-all">
+              <button onClick={() => setShowPaymentModal(true)} className="w-full py-5 bg-pink-500 text-black font-black tracking-widest uppercase hover:bg-white transition-all">
                 Proceed to Payment
               </button>
             </div>
