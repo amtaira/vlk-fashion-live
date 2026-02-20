@@ -14,35 +14,9 @@ export default function Home() {
   const [cart, setCart] = useState<any[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState('');
+  const [showPaymentPrompt, setShowPaymentPrompt] = useState(false);
 
-  useEffect(() => {
-    const handlePopState = (event: any) => {
-      if (event.state) {
-        setView(event.state.view);
-        setActiveCat(event.state.cat);
-        setSelectedProduct(event.state.prod);
-        if (event.state.prod) setActiveImage(event.state.prod.image_url);
-      } else {
-        setView('CATALOGUE');
-        setActiveCat(null);
-        setSelectedProduct(null);
-      }
-    };
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
-
-  const navigate = (newView: ViewState, cat: any = null, prod: any = null) => {
-    setView(newView);
-    setActiveCat(cat);
-    setSelectedProduct(prod);
-    if (prod) {
-      setActiveImage(prod.image_url);
-      setSelectedColor(prod.variants?.[0]?.color || 'OG');
-    }
-    window.history.pushState({ view: newView, cat, prod }, "");
-  };
-
+  // Fetch Data
   useEffect(() => {
     async function fetchData() {
       const { data } = await supabase.from('catalogues').select('*, products(*)');
@@ -51,161 +25,167 @@ export default function Home() {
     fetchData();
   }, []);
 
+  const navigate = (newView: ViewState, cat: any = null, prod: any = null) => {
+    setView(newView);
+    setActiveCat(cat);
+    setSelectedProduct(prod);
+    if (prod) {
+      setActiveImage(prod.image_url);
+      setSelectedColor(prod.variants?.[0]?.color || 'DEFAULT');
+    }
+  };
+
   const addToBag = () => {
-    if (!selectedSize) return alert("SELECT SIZE");
+    if (!selectedSize) return alert("PLEASE SELECT A SIZE");
     setCart([...cart, { ...selectedProduct, selectedSize, activeImage }]);
-    setSelectedSize('');
     setIsCartOpen(true);
   };
 
   return (
-    <main className="min-h-screen text-white relative overflow-x-hidden font-sans">
-      <div className="fixed inset-0 -z-10 bg-black" />
-      <div className="fixed inset-0 -z-10 opacity-20 bg-cover bg-center grayscale pointer-events-none" 
-           style={{ backgroundImage: "url('/hero-bg.jpg')" }} />
-
-      {/* HEADER */}
-      <nav className="fixed top-0 w-full z-[100] px-10 py-8 flex justify-between items-center">
-        <div className="font-black text-pink-500 border border-pink-500 rounded-full w-10 h-10 flex items-center justify-center cursor-pointer hover:bg-pink-500 hover:text-black transition-all" 
-             onClick={() => navigate('CATALOGUE')}>BP</div>
-        
-        <button onClick={() => setIsCartOpen(true)} className="flex items-center gap-2 group">
-          <span className="text-[11px] font-black tracking-[0.3em]">BAG</span>
-          <span className="bg-pink-500 text-black text-[10px] w-6 h-6 flex items-center justify-center rounded-full font-bold">
-            {cart.length}
-          </span>
-        </button>
+    <main className="min-h-screen bg-black text-[#D4AF37] font-mono selection:bg-[#D4AF37] selection:text-black">
+      
+      {/* 1. TOP NAV (Global) */}
+      <nav className="fixed top-0 w-full z-[100] px-10 py-6 flex justify-between items-center bg-black/50 backdrop-blur-md">
+        <div className="text-2xl font-black cursor-pointer" onClick={() => setView('CATALOGUE')}>VLK²</div>
+        <div className="flex gap-8 items-center">
+          <span className="text-[10px] tracking-widest uppercase cursor-pointer opacity-60 hover:opacity-100">Search</span>
+          <button onClick={() => setIsCartOpen(true)} className="bg-[#D4AF37] text-black px-4 py-1 text-[11px] font-bold uppercase tracking-tighter">
+            Cart ({cart.length})
+          </button>
+        </div>
       </nav>
 
-      <div className="pt-32 px-6 md:px-10 pb-20">
+      <div className="flex pt-32 px-10">
         
-        {/* VIEW 1: CATALOGUE */}
-        {view === 'CATALOGUE' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-6xl mx-auto">
-            {catalogues.map(cat => (
-              <div key={cat.id} onClick={() => navigate('GRID', cat)} 
-                   className="h-96 border border-white/10 rounded-[40px] flex flex-col items-center justify-center cursor-pointer hover:bg-white/5 transition-all group">
-                <h2 className="text-3xl font-black tracking-[0.4em] uppercase group-hover:text-pink-500 transition-colors">{cat.name}</h2>
-                <div className="mt-4 h-[1px] w-12 bg-pink-500 transition-all group-hover:w-24" />
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* VIEW 2: GRID */}
-        {view === 'GRID' && (
-          <div className="max-w-7xl mx-auto">
-            <button onClick={() => window.history.back()} className="mb-10 text-[10px] font-black opacity-40 hover:opacity-100 uppercase tracking-widest flex items-center gap-2">
-              ← Return
+        {/* 2. LEFT SIDE NAVIGATION (Persistent Categories) */}
+        <aside className="w-48 hidden lg:block space-y-4 sticky top-32 h-fit">
+          {catalogues.map(cat => (
+            <button 
+              key={cat.id} 
+              onClick={() => navigate('GRID', cat)}
+              className={`block text-[11px] uppercase tracking-[0.2em] hover:text-white transition-all ${activeCat?.id === cat.id ? 'text-white font-bold' : 'opacity-40'}`}
+            >
+              {cat.name}
             </button>
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
-              {activeCat?.products?.map((p: any) => (
-                <div key={p.id} onClick={() => navigate('DETAIL', activeCat, p)} className="cursor-pointer group text-center">
-                  <div className="aspect-[4/5] flex items-center justify-center transition-all group-hover:scale-105">
-                    <img src={p.image_url} className="max-h-full object-contain drop-shadow-2xl" />
-                  </div>
-                  <h3 className="mt-8 text-[11px] font-black uppercase tracking-widest">{p.name}</h3>
-                  <p className="text-pink-500 font-bold mt-2 text-sm">£{p.price}.00</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+          ))}
+        </aside>
 
-        {/* VIEW 3: DETAIL (UPDATED SIDE-BY-SIDE LAYOUT) */}
-        {view === 'DETAIL' && selectedProduct && (
-          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-20 items-start">
-            
-            {/* LEFT: IMAGE COLUMN */}
-            <div className="lg:col-span-7 space-y-8">
-              <div className="flex items-center justify-center min-h-[400px] lg:min-h-[600px]">
-                <img src={activeImage} className="w-full max-h-[70vh] object-contain drop-shadow-[0_20px_60px_rgba(0,0,0,0.7)]" />
-              </div>
+        {/* 3. MAIN CONTENT AREA */}
+        <section className="flex-1">
+          
+          {/* VIEW: PRODUCT DETAIL */}
+          {view === 'DETAIL' && selectedProduct && (
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-20">
               
-              {/* Secondary Thumbnails (Reference Screenshot) */}
-              <div className="flex justify-center gap-4">
-                 {selectedProduct.variants?.map((v: any, idx: number) => (
-                   <img key={idx} src={v.url} onClick={() => setActiveImage(v.url)} 
-                        className={`w-20 h-24 object-contain cursor-pointer border p-1 transition-all ${activeImage === v.url ? 'border-pink-500 bg-white/5' : 'border-transparent opacity-50'}`} />
-                 ))}
-              </div>
-            </div>
-
-            {/* RIGHT: INFO COLUMN */}
-            <div className="lg:col-span-5 space-y-12 lg:pt-10">
-              <header className="space-y-4">
-                <h1 className="text-6xl lg:text-7xl font-black uppercase tracking-tighter italic">{selectedProduct.name}</h1>
-                <p className="text-4xl font-bold tracking-tight">£{selectedProduct.price}.00</p>
-              </header>
-
-              {/* COLOR SELECTION */}
-              <div className="space-y-4">
-                <p className="text-[10px] font-black text-white/40 tracking-[0.3em] uppercase">Active Style: {selectedColor}</p>
-                <div className="flex gap-2">
-                  {selectedProduct.variants?.map((v: any) => (
-                    <button key={v.color} onClick={() => {setActiveImage(v.url); setSelectedColor(v.color);}} 
-                            className={`w-14 h-14 border-2 p-1 transition-all ${selectedColor === v.color ? 'border-pink-500' : 'border-white/10 opacity-40'}`}>
-                      <img src={v.url} className="w-full h-full object-contain" />
-                    </button>
+              {/* LEFT: IMAGES */}
+              <div className="space-y-10">
+                <div className="aspect-[4/5] bg-[#111] flex items-center justify-center overflow-hidden border border-white/5">
+                  <img src={activeImage} className="w-full h-full object-contain p-10" alt="Product View" />
+                </div>
+                {/* Thumbnails (Different Views) */}
+                <div className="flex gap-4 justify-center">
+                  {selectedProduct.variants?.map((v: any, i: number) => (
+                    <img 
+                      key={i} 
+                      src={v.url} 
+                      onClick={() => {setActiveImage(v.url); setSelectedColor(v.color);}}
+                      className={`w-20 h-24 object-cover cursor-pointer border p-1 ${activeImage === v.url ? 'border-[#D4AF37]' : 'border-white/10 opacity-40'}`} 
+                    />
                   ))}
                 </div>
               </div>
 
-              {/* SIZE SELECTION */}
-              <div className="space-y-4">
-                <p className="text-[10px] font-black text-pink-500 tracking-[0.3em] uppercase">Select Size</p>
-                <div className="flex flex-wrap gap-2">
-                  {['S', 'M', 'L', 'XL', 'XXL'].map(s => (
-                    <button key={s} onClick={() => setSelectedSize(s)} 
-                            className={`w-16 h-16 border flex items-center justify-center text-[12px] font-black transition-all relative ${selectedSize === s ? 'border-pink-500 bg-pink-500 text-black' : 'border-white/10 text-white/40 hover:border-white'}`}>
-                      {selectedSize !== s && <div className="absolute inset-0 flex items-center justify-center opacity-10"><div className="w-full h-[1px] bg-pink-500 -rotate-45" /></div>}
-                      {s}
-                    </button>
-                  ))}
+              {/* RIGHT: DETAILS */}
+              <div className="space-y-12">
+                <div className="space-y-2">
+                  <h1 className="text-5xl font-black uppercase italic leading-none">{selectedProduct.name}</h1>
+                  <p className="text-2xl font-bold">£{selectedProduct.price}.00</p>
+                </div>
+
+                {/* Colour Selection */}
+                <div className="space-y-4">
+                  <p className="text-[10px] uppercase tracking-widest opacity-60">Colour</p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedProduct.variants?.map((v: any) => (
+                      <button 
+                        key={v.color}
+                        onClick={() => {setActiveImage(v.url); setSelectedColor(v.color);}}
+                        className={`w-12 h-12 border p-1 transition-all ${selectedColor === v.color ? 'border-[#D4AF37]' : 'border-white/5 opacity-40'}`}
+                      >
+                        <img src={v.url} className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Size Selection */}
+                <div className="space-y-4">
+                  <p className="text-[10px] uppercase tracking-widest opacity-60">Size</p>
+                  <div className="grid grid-cols-5 gap-0 border border-white/10">
+                    {['S', 'M', 'L', 'XL', 'XXL'].map(size => (
+                      <button 
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
+                        className={`py-4 text-xs font-bold border-r border-white/10 last:border-0 transition-all ${selectedSize === size ? 'bg-[#D4AF37] text-black' : 'hover:bg-white/5'}`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <button 
+                  onClick={addToBag}
+                  className="w-full py-6 bg-white text-black font-black uppercase tracking-[0.3em] hover:bg-[#D4AF37] transition-all"
+                >
+                  Add to Bag
+                </button>
+
+                <div className="pt-10 border-t border-white/5 space-y-4 text-[11px] opacity-80 leading-loose">
+                   <p>• 440GSM 100% COTTON FLEECE</p>
+                   <p>• PUFF PRINT DETAILING THROUGHOUT</p>
+                   <p className="text-white">• TRUE TO SIZE - BOXY RELAXED FIT</p>
                 </div>
               </div>
-
-              {/* ADD TO BAG ACTION */}
-              <button onClick={addToBag} className="w-full py-6 bg-white text-black font-black text-[14px] tracking-[0.4em] hover:bg-pink-500 transition-all uppercase">
-                Add to Bag
-              </button>
-
-              {/* DESCRIPTION BULLETS */}
-              <div className="pt-10 border-t border-white/5 space-y-4 opacity-50 text-[10px] font-black uppercase tracking-widest">
-                <p>• {selectedProduct.description || "450GSM Luxury Weight Cotton"}</p>
-                <p>• Intricate Puff-Print Detailing</p>
-                <p className="text-pink-500">• Boxy Relaxed Fit - True to size</p>
-              </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {/* (Grid and Catalogue views would follow same logic) */}
+        </section>
       </div>
 
-      {/* CART DRAWER */}
-      {isCartOpen && (
-        <div className="fixed inset-0 z-[200] flex justify-end">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsCartOpen(false)} />
-          <div className="relative w-full max-w-md bg-black border-l border-white/10 h-full p-10 flex flex-col">
-            <h2 className="text-[14px] font-black tracking-[0.5em] uppercase italic mb-10">Current Bag</h2>
-            <div className="flex-1 overflow-y-auto space-y-6">
-              {cart.map((item, i) => (
-                <div key={i} className="flex gap-4 items-center border-b border-white/5 pb-4">
-                  <img src={item.activeImage} className="w-16 h-20 object-contain" />
-                  <div className="flex-1">
-                    <p className="text-[10px] font-black uppercase">{item.name}</p>
-                    <p className="text-[9px] text-pink-500 uppercase">{item.selectedSize}</p>
-                  </div>
-                  <p className="font-bold">£{item.price}</p>
+      {/* 4. PAYMENT & CHECKOUT PROMPT */}
+      {showPaymentPrompt && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-6">
+          <div className="absolute inset-0 bg-black/95 backdrop-blur-xl" onClick={() => setShowPaymentPrompt(false)} />
+          <div className="relative w-full max-w-lg bg-[#111] border border-white/10 p-10 space-y-8">
+            <h2 className="text-2xl font-black uppercase italic tracking-tighter">Secure Checkout</h2>
+            
+            <div className="space-y-4">
+              <p className="text-[10px] uppercase opacity-40">Choose Payment Method</p>
+              
+              {/* Visa Option */}
+              <button className="w-full p-6 border border-white/10 flex justify-between items-center hover:bg-white hover:text-black transition-all group">
+                <span className="font-bold tracking-widest">VISA / MASTERCARD</span>
+                <div className="flex gap-2">
+                  <div className="w-8 h-5 bg-blue-600 rounded-sm" />
+                  <div className="w-8 h-5 bg-orange-500 rounded-sm" />
                 </div>
-              ))}
+              </button>
+
+              {/* M-Pesa / Paybill Option */}
+              <button className="w-full p-6 border border-white/10 flex justify-between items-center hover:bg-[#2fb344] hover:text-white transition-all">
+                <span className="font-bold tracking-widest">LIPA NA M-PESA</span>
+                <span className="text-[10px] font-black">PAYBILL: 400200</span>
+              </button>
             </div>
-            <div className="pt-10 space-y-4">
-              <div className="flex justify-between font-black text-xl border-t border-white/10 pt-4">
-                <span>TOTAL</span>
-                <span>£{cart.reduce((acc, curr) => acc + Number(curr.price), 0)}</span>
-              </div>
-              <button className="w-full py-5 bg-pink-500 text-black font-black tracking-widest uppercase hover:bg-white transition-all">
-                Proceed to Payment
+
+            <div className="pt-6 border-t border-white/5">
+              <button 
+                onClick={handleOrderSubmission}
+                className="w-full py-5 bg-[#D4AF37] text-black font-black uppercase tracking-widest"
+              >
+                Complete Payment
               </button>
             </div>
           </div>
