@@ -92,6 +92,7 @@ export default function Home() {
 
   return (
     <main className="relative min-h-screen text-[#D4AF37] font-mono selection:bg-[#D4AF37] selection:text-black">
+      {/* BACKGROUND ELEMENTS - PRESERVED */}
       <div className="fixed inset-0 -z-10 bg-black" />
       <div className="fixed inset-0 -z-10 opacity-30 bg-cover bg-center grayscale pointer-events-none" style={{ backgroundImage: "url('/hero-bg.jpg')" }} />
 
@@ -101,7 +102,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* NAVIGATION */}
+      {/* NAV BAR */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center p-6 md:p-10 bg-gradient-to-b from-black to-transparent">
         <div className="text-xl md:text-2xl font-black tracking-tighter cursor-pointer text-white italic" onClick={() => {setActiveCatalogue(null); setSearchQuery('');}}>VLK²</div>
         <div className="flex items-center gap-4 md:gap-8">
@@ -111,7 +112,7 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* MAIN CONTENT */}
+      {/* GRID LAYOUT */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-10 pt-32 md:pt-48 pb-10">
         {searchQuery ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 animate-in fade-in duration-500">
@@ -147,32 +148,40 @@ export default function Home() {
         )}
       </div>
 
-      {/* CORTEIZ-STYLE PRODUCT MODAL */}
+      {/* NEW CORTEIZ-STYLE MODAL */}
       {selectedProduct && (
         <div className="fixed inset-0 z-[150] bg-black flex items-center justify-center p-4 md:p-10 overflow-y-auto">
           <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
             
-            {/* LEFT SIDE: IMAGE PREVIEW */}
+            {/* PRODUCT IMAGE VIEWER */}
             <div className="flex items-center justify-center bg-[#0a0a0a] border border-white/5 aspect-square relative group">
               <img 
                 key={activeImage} 
                 src={activeImage} 
                 className="max-h-[70vh] w-auto object-contain animate-in fade-in zoom-in-95 duration-500 transition-all group-hover:scale-105" 
-                alt="Main View"
+                alt="Active View"
               />
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-2xl text-[#D4AF37]">›</div>
             </div>
 
-            {/* RIGHT SIDE: SELECTION DETAILS */}
+            {/* PRODUCT SELECTION INFO */}
             <div className="flex flex-col justify-center space-y-8 py-4">
-              <button onClick={() => setSelectedProduct(null)} className="text-left text-[9px] opacity-30 hover:opacity-100 tracking-[0.6em] transition-all">← RETURN_TO_ARCHIVE</button>
+              <button 
+                onClick={() => setSelectedProduct(null)} 
+                className="text-left text-[9px] opacity-30 hover:opacity-100 tracking-[0.6em] transition-all"
+              >
+                ← RETURN_TO_ARCHIVE
+              </button>
 
               <div className="space-y-2">
-                <h2 className="text-3xl md:text-5xl font-black text-white italic uppercase tracking-tighter leading-none">{selectedProduct.name}</h2>
-                <p className="text-xl md:text-2xl text-[#D4AF37] font-bold">${selectedProduct.price}.00</p>
+                <h2 className="text-3xl md:text-5xl font-black text-white italic uppercase tracking-tighter leading-none">
+                  {selectedProduct.name}
+                </h2>
+                <p className="text-xl md:text-2xl text-[#D4AF37] font-bold">
+                  ${selectedProduct.price}.00
+                </p>
               </div>
 
-              {/* COLOUR SWATCHES */}
+              {/* COLOUR SELECTION (IMAGE SWATCHES) */}
               <div className="space-y-4">
                 <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">
                   COLOUR: <span className="text-[#D4AF37] ml-2 opacity-80">{selectedColor}</span>
@@ -194,7 +203,7 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* SIZE GRID */}
+              {/* SIZE SELECTION (CORTEIZ GRID) */}
               <div className="space-y-4">
                 <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">
                   SIZE: <span className="text-[#D4AF37] ml-2 opacity-80">{selectedSize}</span>
@@ -216,7 +225,6 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* ACTION */}
               <div className="pt-6">
                 <button 
                   onClick={addToCart} 
@@ -230,7 +238,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* SHIPPING POLICY MODAL */}
+      {/* SHIPPING POLICY - PRESERVED */}
       {showShipping && (
         <div className="fixed inset-0 z-[200] bg-black flex items-center justify-center p-8 overflow-y-auto">
           <div className="max-w-2xl w-full text-[10px] leading-loose tracking-[0.1em] space-y-6 text-[#D4AF37]/90 uppercase">
@@ -242,13 +250,13 @@ export default function Home() {
         </div>
       )}
 
-      {/* FOOTER */}
+      {/* FOOTER - PRESERVED */}
       <footer className="relative z-20 w-full py-20 border-t border-[#D4AF37]/10 mt-20 flex flex-col items-center justify-center bg-black">
           <button onClick={() => router.push('/login')} className="px-8 py-3 border border-[#D4AF37] text-[#D4AF37] text-[9px] font-bold uppercase tracking-[0.4em] hover:bg-[#D4AF37] hover:text-black transition-all">Initialize Admin Session</button>
           <p className="mt-8 text-[6px] text-white/10 uppercase tracking-widest">© 2026 VLK² Global Archive</p>
       </footer>
 
-      {/* CART / ARCHIVE SIDEBAR */}
+      {/* CHECKOUT SIDEBAR - PRESERVED */}
       {isCartOpen && (
         <div className="fixed inset-0 z-[100] flex justify-end">
           <div className="absolute inset-0 bg-black/90" onClick={() => setIsCartOpen(false)} />
