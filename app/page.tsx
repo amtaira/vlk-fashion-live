@@ -11,20 +11,31 @@ export default function Home() {
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [activeImage, setActiveImage] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
-  const [cart, setCart] = useState<any[]>([]);
+  const [cart, setCart] = useState<any[]>([]); // Initialized as empty
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState('');
 
-  // PAYMENT STATES
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'NONE' | 'MPESA' | 'VISA'>('NONE');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [cardDetails, setCardDetails] = useState({ number: '', expiry: '', cvc: '' });
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // FIX: Handle browser navigation properly
+  // 1. LOAD CART FROM LOCALSTORAGE ON MOUNT
   useEffect(() => {
-    // Set initial state so "Back" to home works
+    const savedCart = localStorage.getItem('vlk_cart');
+    if (savedCart) {
+      setCart(JSON.parse(savedCart));
+    }
+  }, []);
+
+  // 2. SAVE CART TO LOCALSTORAGE WHENEVER IT CHANGES
+  useEffect(() => {
+    localStorage.setItem('vlk_cart', JSON.stringify(cart));
+  }, [cart]);
+
+  // NAVIGATION & POPSTATE (Back Button Logic)
+  useEffect(() => {
     window.history.replaceState({ view: 'CATALOGUE', cat: null, prod: null }, "");
 
     const handlePopState = (event: any) => {
@@ -64,9 +75,14 @@ export default function Home() {
 
   const addToBag = () => {
     if (!selectedSize) return alert("SELECT SIZE");
-    setCart([...cart, { ...selectedProduct, selectedSize, activeImage, selectedColor }]);
+    const newItem = { ...selectedProduct, selectedSize, activeImage, selectedColor, cartId: Math.random() };
+    setCart([...cart, newItem]);
     setSelectedSize('');
-    // Removed setIsCartOpen(true) so it doesn't pop up automatically
+    // Notice: isCartOpen(true) is NOT here, so customer stays on product page to add more
+  };
+
+  const removeFromCart = (cartId: number) => {
+    setCart(cart.filter(item => item.cartId !== cartId));
   };
 
   const submitOrder = async () => {
@@ -83,9 +99,8 @@ export default function Home() {
 
     if (!error) {
       alert("VLK²: Payment Confirmed. Order sent to Admin!");
-      setCart([]);
+      setCart([]); // Clears cart in state and storage
       setShowPaymentModal(false);
-      setPaymentMethod('NONE');
       setIsCartOpen(false);
     } else {
       alert("Error sending order.");
@@ -210,29 +225,18 @@ export default function Home() {
               <div className="space-y-4">
                 <button onClick={() => setPaymentMethod('MPESA')} className="w-full p-6 border border-white/10 rounded-2xl flex justify-between items-center hover:bg-green-600 transition-all group">
                   <span className="font-bold">M-PESA</span>
-                  <span className="text-[10px] opacity-40 group-hover:opacity-100">STK PUSH</span>
                 </button>
                 <button onClick={() => setPaymentMethod('VISA')} className="w-full p-6 border border-white/10 rounded-2xl flex justify-between items-center hover:bg-white hover:text-black transition-all">
                   <span className="font-bold">CARD / VISA</span>
-                  <span className="text-[10px] opacity-40">DEBIT</span>
                 </button>
               </div>
             )}
             {paymentMethod === 'MPESA' && (
               <div className="space-y-6">
-                <input type="text" placeholder="PHONE NUMBER (254...)" className="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none"
+                <input type="text" placeholder="PHONE NUMBER" className="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none"
                        value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
-                <button onClick={submitOrder} disabled={isProcessing} className="w-full py-4 bg-green-600 text-white font-black uppercase tracking-widest rounded-xl">
+                <button onClick={submitOrder} disabled={isProcessing} className="w-full py-4 bg-green-600 text-white font-black uppercase rounded-xl">
                   {isProcessing ? "PROCESSING..." : "CONFIRM & PAY"}
-                </button>
-              </div>
-            )}
-            {paymentMethod === 'VISA' && (
-              <div className="space-y-4">
-                <input type="text" placeholder="CARD NUMBER" className="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none"
-                       onChange={(e) => setCardDetails({...cardDetails, number: e.target.value})} />
-                <button onClick={submitOrder} disabled={isProcessing} className="w-full py-4 bg-pink-500 text-black font-black uppercase tracking-widest rounded-xl">
-                  {isProcessing ? "PROCESSING..." : "AUTHORIZE"}
                 </button>
               </div>
             )}
@@ -241,19 +245,21 @@ export default function Home() {
         </div>
       )}
 
-      {/* CART DRAWER (This is where "Proceed to Payment" lives) */}
+      {/* CART DRAWER */}
       {isCartOpen && (
         <div className="fixed inset-0 z-[200] flex justify-end">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsCartOpen(false)} />
           <div className="relative w-full max-w-md bg-black border-l border-white/10 h-full p-10 flex flex-col">
             <h2 className="text-[14px] font-black tracking-[0.5em] uppercase italic mb-10">Current Bag</h2>
             <div className="flex-1 overflow-y-auto space-y-6">
-              {cart.map((item, i) => (
-                <div key={i} className="flex gap-4 items-center border-b border-white/5 pb-4">
+              {cart.map((item) => (
+                <div key={item.cartId} className="flex gap-4 items-center border-b border-white/5 pb-4">
                   <img src={item.activeImage} className="w-16 h-20 object-contain" />
                   <div className="flex-1 text-[10px] font-black uppercase">
                     <p>{item.name}</p>
                     <p className="text-pink-500">{item.selectedSize}</p>
+                    {/* Added a remove button for customer satisfaction */}
+                    <button onClick={() => removeFromCart(item.cartId)} className="text-[8px] opacity-30 hover:opacity-100 mt-1">REMOVE</button>
                   </div>
                   <p className="font-bold">£{item.price}</p>
                 </div>
