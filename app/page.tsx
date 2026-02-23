@@ -101,19 +101,24 @@ export default function Home() {
 
   return (
     <main className="min-h-screen text-white relative overflow-x-hidden font-sans">
-      
-      {/* 1. PERSISTENT BACKGROUND IMAGE (hero-big.jpg from public) */}
+      {/* PERSISTENT BACKGROUND VIDEO & FALLBACK */}
       <div className="fixed inset-0 -z-30 bg-black" />
+      
+      {/* RESTORED VIDEO LAYER */}
+      <video src={bgVideo || "/hero-bg.mp4"} autoPlay loop muted playsInline 
+             className="fixed inset-0 -z-25 w-full h-full object-cover opacity-30 grayscale pointer-events-none" />
+
+      {/* STATIC HERO IMAGE OVERLAY */}
       <div 
-        className="fixed inset-0 -z-20 w-full h-full bg-cover bg-center opacity-30 grayscale pointer-events-none"
+        className="fixed inset-0 -z-20 w-full h-full bg-cover bg-center opacity-20 grayscale pointer-events-none"
         style={{ backgroundImage: "url('/hero-big.jpg')" }} 
       />
       
-      {/* 2. PRODUCT PAGE OVERLAY BACKGROUND */}
+      {/* PRODUCT PAGE BACKGROUND IMAGE */}
       {(view === 'GRID' || view === 'DETAIL') && (
         <div 
           className="fixed inset-0 -z-10 opacity-40 grayscale bg-cover bg-center pointer-events-none transition-opacity duration-1000"
-          style={{ backgroundImage: "url('/product-bg.jpg')" }} 
+          style={{ backgroundImage: "url('https://vlk-lukks-assets.s3.amazonaws.com/image_3fe0f4.jpg')" }} 
         />
       )}
 
@@ -142,7 +147,13 @@ export default function Home() {
             { id: 'SHIPMENT', label: 'Shipment Policy' },
             { id: 'COOKIE', label: 'Cookie Policy' }
           ].map((item) => (
-            <button key={item.id} onClick={() => navigate(item.id as ViewState)} className="text-2xl font-black uppercase italic text-left hover:text-pink-500 transition-all hover:pl-2">{item.label}</button>
+            <button 
+              key={item.id} 
+              onClick={() => navigate(item.id as ViewState)} 
+              className="text-2xl font-black uppercase italic text-left hover:text-pink-500 transition-all hover:pl-2"
+            >
+              {item.label}
+            </button>
           ))}
         </div>
       </div>
@@ -197,24 +208,36 @@ export default function Home() {
           </div>
         )}
 
-        {/* POLICIES */}
         {view === 'SUSTAINABILITY' && (
           <ContentPage title="Sustainability">
             <p>At VLKLUKKS², sustainability is not an option; it is our foundation. We believe in high-utility fashion that lasts generations, not seasons.</p>
+            <p>Our fabrics are sourced from 100% recycled cotton fleece and organic textiles. We operate on a zero-waste policy, ensuring every scrap of material is repurposed into our accessories line.</p>
           </ContentPage>
         )}
+
         {view === 'SIZE_GUIDE' && (
           <ContentPage title="Size Guide">
-            <p>Our fit is designed for an "Urban Oversized" aesthetic.</p>
+            <p>Our fit is designed for an "Urban Oversized" aesthetic. If you prefer a regular fit, we recommend sizing down.</p>
+            <div className="grid grid-cols-2 gap-4 border border-white/10 p-6 mt-4">
+              <div className="font-black opacity-50">SIZE</div><div className="font-black opacity-50">CHEST (IN)</div>
+              <div>S</div><div>36 - 38</div>
+              <div>M</div><div>38 - 40</div>
+              <div>L</div><div>40 - 42</div>
+              <div>XL</div><div>42 - 44</div>
+            </div>
           </ContentPage>
         )}
+
         {view === 'FOUNDATION' && (
           <ContentPage title="Foundation">
-            <p>The VLK² Foundation supports underground digital artists.</p>
+            <p>The VLK² Foundation supports underground digital artists and urban photographers in emerging cities.</p>
+            <p>A percentage of every sale goes directly into our grant program, providing equipment and exhibition space for creators who are shaping the new visual world.</p>
           </ContentPage>
         )}
+
         {view === 'SHIPMENT' && (
           <ContentPage title="Shipment Policy">
+            <p>We ship globally. Orders are processed within 48 hours of acquisition. Once shipped, you will receive an encrypted tracking code via SMS/Email.</p>
             <p>Standard Shipping: 5-7 Business Days. Express: 24-48 Hours.</p>
           </ContentPage>
         )}
@@ -233,25 +256,25 @@ export default function Home() {
                 </button>
               ))}
             </div>
-            
             {paymentMethod === 'MPESA_STK' && (
               <div className="space-y-4">
                 <input type="text" placeholder="2547..." className="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none focus:border-pink-500" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
                 <button onClick={submitOrder} className="w-full py-4 bg-green-600 font-black uppercase rounded-xl">Send STK Prompt</button>
               </div>
             )}
-            
             {paymentMethod === 'MPESA_PAYBILL' && (
               <div className="space-y-4 text-center p-6 bg-white/5 rounded-2xl">
-                {/* UPDATED PAYBILL DETAILS */}
                 <p className="text-xs font-black text-pink-500 uppercase">Paybill: 247247 | Account: 0795151303</p>
                 <button onClick={submitOrder} className="w-full py-4 bg-white text-black font-black uppercase rounded-xl mt-4">Confirm Payment</button>
               </div>
             )}
-            
             {paymentMethod === 'VISA' && (
               <div className="space-y-4">
                 <input type="text" placeholder="CARD NUMBER" className="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none" />
+                <div className="flex gap-4">
+                  <input type="text" placeholder="MM/YY" className="w-1/2 bg-white/5 border border-white/10 p-4 rounded-xl outline-none" />
+                  <input type="text" placeholder="CVC" className="w-1/2 bg-white/5 border border-white/10 p-4 rounded-xl outline-none" />
+                </div>
                 <button onClick={submitOrder} className="w-full py-4 bg-blue-600 font-black uppercase rounded-xl">Pay Now</button>
               </div>
             )}
