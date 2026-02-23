@@ -11,9 +11,10 @@ export default function Home() {
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [activeImage, setActiveImage] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
-  const [cart, setCart] = useState<any[]>([]); // Initialized as empty
+  const [cart, setCart] = useState<any[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState('');
+  const [bgVideo, setBgVideo] = useState('');
 
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'NONE' | 'MPESA' | 'VISA'>('NONE');
@@ -21,23 +22,32 @@ export default function Home() {
   const [cardDetails, setCardDetails] = useState({ number: '', expiry: '', cvc: '' });
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // 1. LOAD CART FROM LOCALSTORAGE ON MOUNT
+  // 1. FETCH DATA & SETTINGS
   useEffect(() => {
-    const savedCart = localStorage.getItem('vlk_cart');
-    if (savedCart) {
-      setCart(JSON.parse(savedCart));
+    async function fetchData() {
+      // Get Products/Catalogues
+      const { data: catData } = await supabase.from('catalogues').select('*, products(*)');
+      if (catData) setCatalogues(catData);
+
+      // Get Site Appearance (Background Video)
+      const { data: settings } = await supabase.from('site_settings').select('value').eq('key', 'bg_video').maybeSingle();
+      if (settings) setBgVideo(settings.value);
     }
+    fetchData();
+
+    // Load Cart
+    const savedCart = localStorage.getItem('vlk_cart');
+    if (savedCart) setCart(JSON.parse(savedCart));
   }, []);
 
-  // 2. SAVE CART TO LOCALSTORAGE WHENEVER IT CHANGES
+  // 2. SAVE CART TO LOCALSTORAGE
   useEffect(() => {
     localStorage.setItem('vlk_cart', JSON.stringify(cart));
   }, [cart]);
 
-  // NAVIGATION & POPSTATE (Back Button Logic)
+  // NAVIGATION & POPSTATE
   useEffect(() => {
     window.history.replaceState({ view: 'CATALOGUE', cat: null, prod: null }, "");
-
     const handlePopState = (event: any) => {
       if (event.state) {
         setView(event.state.view || 'CATALOGUE');
@@ -65,20 +75,11 @@ export default function Home() {
     window.history.pushState({ view: newView, cat, prod }, "");
   };
 
-  useEffect(() => {
-    async function fetchData() {
-      const { data } = await supabase.from('catalogues').select('*, products(*)');
-      if (data) setCatalogues(data);
-    }
-    fetchData();
-  }, []);
-
   const addToBag = () => {
     if (!selectedSize) return alert("SELECT SIZE");
     const newItem = { ...selectedProduct, selectedSize, activeImage, selectedColor, cartId: Math.random() };
     setCart([...cart, newItem]);
     setSelectedSize('');
-    // Notice: isCartOpen(true) is NOT here, so customer stays on product page to add more
   };
 
   const removeFromCart = (cartId: number) => {
@@ -99,7 +100,7 @@ export default function Home() {
 
     if (!error) {
       alert("VLK²: Payment Confirmed. Order sent to Admin!");
-      setCart([]); // Clears cart in state and storage
+      setCart([]);
       setShowPaymentModal(false);
       setIsCartOpen(false);
     } else {
@@ -110,9 +111,21 @@ export default function Home() {
 
   return (
     <main className="min-h-screen text-white relative overflow-x-hidden font-sans">
+      {/* DYNAMIC BACKGROUND */}
       <div className="fixed inset-0 -z-10 bg-black" />
-      <div className="fixed inset-0 -z-10 opacity-20 bg-cover bg-center grayscale pointer-events-none" 
-           style={{ backgroundImage: "url('/hero-bg.jpg')" }} />
+      {bgVideo ? (
+        <video 
+          src={bgVideo} 
+          autoPlay 
+          loop 
+          muted 
+          playsInline 
+          className="fixed inset-0 -z-10 w-full h-full object-cover opacity-20 grayscale pointer-events-none" 
+        />
+      ) : (
+        <div className="fixed inset-0 -z-10 opacity-20 bg-cover bg-center grayscale pointer-events-none" 
+             style={{ backgroundImage: "url('/hero-bg.jpg')" }} />
+      )}
 
       {/* HEADER */}
       <nav className="fixed top-0 w-full z-[100] px-10 py-8 flex justify-between items-center">
@@ -128,7 +141,6 @@ export default function Home() {
       </nav>
 
       <div className="pt-32 px-6 md:px-10 pb-20">
-        
         {/* VIEW 1: CATALOGUE */}
         {view === 'CATALOGUE' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-6xl mx-auto">
@@ -258,7 +270,6 @@ export default function Home() {
                   <div className="flex-1 text-[10px] font-black uppercase">
                     <p>{item.name}</p>
                     <p className="text-pink-500">{item.selectedSize}</p>
-                    {/* Added a remove button for customer satisfaction */}
                     <button onClick={() => removeFromCart(item.cartId)} className="text-[8px] opacity-30 hover:opacity-100 mt-1">REMOVE</button>
                   </div>
                   <p className="font-bold">£{item.price}</p>
