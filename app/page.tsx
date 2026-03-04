@@ -101,7 +101,7 @@ export default function Home() {
     <main className="min-h-screen text-white relative overflow-x-hidden font-sans">
       <div className="fixed inset-0 -z-30 bg-black" />
       
-      {/* IMPROVED VIDEO LAYER: Original Color + Centered Fit */}
+      {/* VIDEO LAYER: Seamless loop and original color */}
       <video 
         src={bgVideo || "/hero-bg.mp4"} 
         autoPlay 
@@ -123,16 +123,27 @@ export default function Home() {
         />
       )}
 
+      {/* NAV WITH LOGO1.PNG */}
       <nav className="fixed top-0 w-full z-[100] px-6 py-8 flex justify-between items-center mix-blend-difference">
         <button onClick={() => setIsMenuOpen(true)} className="flex items-center gap-4 group">
           <div className="space-y-1.5"><div className="w-6 h-0.5 bg-white"/><div className="w-4 h-0.5 bg-white"/></div>
           <span className="text-[10px] font-black tracking-widest uppercase text-white">Menu</span>
         </button>
-        <div className="font-black text-2xl tracking-tighter cursor-pointer text-white" onClick={() => navigate('HOME')}>VLKLUKKS²</div>
+        <img 
+            src="/logo1.png" 
+            alt="VLK" 
+            className="h-8 cursor-pointer object-contain" 
+            onClick={() => navigate('HOME')} 
+        />
         <button onClick={() => setIsCartOpen(true)} className="flex items-center gap-2">
           <span className="bg-red-600 text-white text-[10px] w-6 h-6 flex items-center justify-center rounded-full font-bold">{cart.length}</span>
         </button>
       </nav>
+
+      {/* BOTTOM LEFT CORNER LOGO */}
+      <div className="fixed bottom-6 left-6 z-[100] mix-blend-difference pointer-events-none">
+          <img src="/vlogo.png" alt="VLK icon" className="w-12 h-12 object-contain opacity-80" />
+      </div>
 
       <div className={`fixed inset-0 z-[150] transition-transform duration-500 ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="absolute inset-0 bg-black/95 backdrop-blur-md" onClick={() => setIsMenuOpen(false)} />
@@ -159,8 +170,13 @@ export default function Home() {
 
       <div className="pt-32 px-6 pb-20 relative z-10">
         {view === 'HOME' && (
-          <div className="h-[60vh] flex flex-col items-center justify-center text-center space-y-6">
-            <h1 className="text-8xl font-black uppercase italic tracking-tighter">VLKLUKKS</h1>
+          <div className="h-[60vh] flex flex-col items-center justify-center text-center space-y-12">
+            {/* BRAND IMAGE REPLACING TEXT H1 */}
+            <img 
+                src="/visual lukks.png" 
+                alt="Visual Lukks" 
+                className="w-full max-w-2xl h-auto object-contain animate-pulse" 
+            />
             <button onClick={() => navigate('CATALOGUE')} className="px-10 py-4 border border-white hover:bg-red-600 hover:border-red-600 transition-all uppercase font-black text-xs tracking-[0.4em]">Shop With Us</button>
           </div>
         )}
@@ -221,7 +237,7 @@ export default function Home() {
         )}
       </div>
 
-      {/* PAYMENT MODAL (SWAPPED PINK TO RED) */}
+      {/* PAYMENT MODAL */}
       {showPaymentModal && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/95 backdrop-blur-md" onClick={() => setShowPaymentModal(false)} />
@@ -244,7 +260,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* CART DRAWER (SWAPPED PINK TO RED) */}
+      {/* CART DRAWER */}
       {isCartOpen && (
         <div className="fixed inset-0 z-[200] flex justify-end">
           <div className="absolute inset-0 bg-black/80" onClick={() => setIsCartOpen(false)} />
