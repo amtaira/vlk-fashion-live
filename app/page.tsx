@@ -94,7 +94,7 @@ export default function Home() {
     }
   };
 
-  // 2. REUSABLE POLICY PAGE WRAPPER
+  // REUSABLE POLICY PAGE WRAPPER
   const PolicyPage = ({ title, children }: { title: string, children: React.ReactNode }) => (
     <div className="max-w-4xl mx-auto pt-32 px-6 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <h1 className="text-5xl font-black italic uppercase tracking-tighter text-red-600 mb-8 border-b border-white/10 pb-4">{title}</h1>
@@ -109,6 +109,11 @@ export default function Home() {
     <main className="min-h-screen text-white relative overflow-x-hidden font-sans">
       <div className="fixed inset-0 -z-30 bg-black" />
       <video src={bgVideo || "/hero-bg.mp4"} autoPlay loop muted playsInline className="fixed inset-0 -z-25 w-full h-full object-cover opacity-60 pointer-events-none" />
+
+      {/* PERSISTENT LOGO (BOTTOM LEFT) */}
+      <div className="fixed bottom-8 left-8 z-[100] mix-blend-difference pointer-events-none">
+        <img src="/vlogo.png" alt="VLK Logo" className="w-16 h-auto opacity-80" />
+      </div>
 
       {/* NAV */}
       <nav className="fixed top-0 w-full z-[100] px-6 py-8 flex justify-between items-center mix-blend-difference">
@@ -138,7 +143,8 @@ export default function Home() {
       <div className="relative z-10">
         {view === 'HOME' && (
           <div className="min-h-screen flex flex-col items-center justify-center transform -translate-y-10">
-            <img src="/visual lukks.png" className="w-full max-w-2xl h-auto object-contain animate-pulse" />
+            {/* UPDATED LOGO FONT */}
+            <img src="/visual lukks.png" alt="Visual Lukks" className="w-full max-w-2xl h-auto object-contain animate-pulse mb-8" />
             <button onClick={() => navigate('CATALOGUE')} className="px-12 py-4 border border-white hover:bg-red-600 hover:border-red-600 transition-all uppercase font-black text-xs tracking-[0.4em]">Shop With Us</button>
           </div>
         )}
@@ -154,7 +160,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* POLICY CONTENT HANDLERS */}
         {view === 'SHIPMENT' && (
           <PolicyPage title="Shipment Policy">
             <p>VLK² Logistics ensures worldwide shipping within 7-14 business days.</p>
@@ -185,7 +190,6 @@ export default function Home() {
           </PolicyPage>
         )}
 
-        {/* REST OF VIEWS (CATALOGUE, GRID, DETAIL) STAY THE SAME AS BEFORE */}
         {view === 'CATALOGUE' && (
           <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 pt-40 px-6">
             {catalogues.map(cat => (
@@ -196,7 +200,6 @@ export default function Home() {
           </div>
         )}
         
-        {/* ... (Keep Detail and Grid view code from previous version here) */}
         {view === 'GRID' && (
           <div className="max-w-6xl mx-auto grid grid-cols-2 lg:grid-cols-3 gap-10 mt-40 px-6">
             {activeCat?.products?.map((p: any) => (
@@ -226,8 +229,7 @@ export default function Home() {
         )}
       </div>
 
-      {/* CART & PAYMENT MODALS STAY THE SAME AS BEFORE */}
-      {/* (Previous payment and cart drawer logic is fully preserved) */}
+      {/* CART DRAWER */}
       {isCartOpen && (
         <div className="fixed inset-0 z-[200] flex justify-end">
           <div className="absolute inset-0 bg-black/80" onClick={() => setIsCartOpen(false)} />
@@ -264,6 +266,7 @@ export default function Home() {
         </div>
       )}
 
+      {/* PAYMENT MODAL */}
       {showPaymentModal && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/95 backdrop-blur-md" onClick={() => setShowPaymentModal(false)} />
