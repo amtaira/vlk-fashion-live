@@ -145,10 +145,11 @@ export default function Home() {
           <img src="/vlogo.png" alt="VLK icon" className="w-12 h-12 object-contain opacity-80" />
       </div>
 
-      <div className={`fixed inset-0 z-[150] transition-transform duration-500 ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="absolute inset-0 bg-black/95 backdrop-blur-md" onClick={() => setIsMenuOpen(false)} />
-        <div className="relative w-80 h-full bg-black border-r border-white/10 p-10 flex flex-col justify-center space-y-6">
-          <button onClick={() => setIsMenuOpen(false)} className="absolute top-10 right-10 text-[10px] font-black opacity-40 uppercase">Close</button>
+      {/* STYLED MENU SECTION: Not closing video, using blur */}
+      <div className={`fixed inset-0 z-[150] transition-opacity duration-500 ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+        <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />
+        <div className={`relative w-80 h-full bg-black/40 backdrop-blur-xl border-r border-white/10 p-10 flex flex-col justify-center space-y-8 transition-transform duration-500 ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <button onClick={() => setIsMenuOpen(false)} className="absolute top-10 right-10 text-[10px] font-black opacity-40 uppercase hover:opacity-100 transition-opacity">Close</button>
           {[
             { id: 'CATALOGUE', label: 'Products' },
             { id: 'SIZE_GUIDE', label: 'Size Guide' },
@@ -160,9 +161,10 @@ export default function Home() {
             <button 
               key={item.id} 
               onClick={() => navigate(item.id as ViewState)} 
-              className="text-2xl font-black uppercase italic text-left hover:text-red-600 transition-all hover:pl-2"
+              className="group text-2xl font-black uppercase italic text-left transition-all relative overflow-hidden"
             >
-              {item.label}
+              <span className="relative z-10 group-hover:text-red-600 transition-colors">{item.label}</span>
+              <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-600 group-hover:w-full transition-all duration-300" />
             </button>
           ))}
         </div>
@@ -170,8 +172,8 @@ export default function Home() {
 
       <div className="pt-32 px-6 pb-20 relative z-10">
         {view === 'HOME' && (
-          <div className="h-[60vh] flex flex-col items-center justify-center text-center space-y-12">
-            {/* BRAND IMAGE REPLACING TEXT H1 */}
+          <div className="h-[60vh] flex flex-col items-center justify-center text-center space-y-4">
+            {/* BRAND IMAGE - PULLED CLOSER TO BUTTON */}
             <img 
                 src="/visual lukks.png" 
                 alt="Visual Lukks" 
