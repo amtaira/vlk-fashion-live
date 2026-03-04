@@ -20,7 +20,6 @@ export default function Home() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'NONE' | 'MPESA_STK' | 'MPESA_PAYBILL' | 'VISA'>('NONE');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [cardDetails, setCardDetails] = useState({ number: '', expiry: '', cvc: '' });
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
@@ -52,6 +51,14 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const updateQuantity = (cartId: number, delta: number) => {
+    setCart(cart.map(item => item.cartId === cartId ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item));
+  };
+
+  const removeFromCart = (cartId: number) => {
+    setCart(cart.filter(item => item.cartId !== cartId));
+  };
+
   const addToBag = () => {
     if (!selectedSize) return alert("SELECT SIZE");
     const existing = cart.find(i => i.id === selectedProduct.id && i.selectedSize === selectedSize);
@@ -63,14 +70,6 @@ export default function Home() {
     }
     setSelectedSize('');
     setIsCartOpen(true);
-  };
-
-  const updateQuantity = (cartId: number, delta: number) => {
-    setCart(cart.map(item => item.cartId === cartId ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item));
-  };
-
-  const removeFromCart = (cartId: number) => {
-    setCart(cart.filter(item => item.cartId !== cartId));
   };
 
   const submitOrder = async () => {
@@ -103,30 +102,54 @@ export default function Home() {
 
       {/* NAV */}
       <nav className="fixed top-0 w-full z-[100] px-6 py-8 flex justify-between items-center mix-blend-difference">
-        <button onClick={() => setIsMenuOpen(true)} className="flex items-center gap-4 group">
+        <button onClick={() => setIsMenuOpen(true)} className="flex items-center gap-4 group cursor-pointer">
           <div className="space-y-1.5"><div className="w-6 h-0.5 bg-white"/><div className="w-4 h-0.5 bg-white"/></div>
           <span className="text-[10px] font-black uppercase tracking-widest">Menu</span>
         </button>
         <img src="/logo1.png" alt="VLK" className="h-8 cursor-pointer" onClick={() => navigate('HOME')} />
-        <button onClick={() => setIsCartOpen(true)} className="relative">
+        <button onClick={() => setIsCartOpen(true)} className="relative cursor-pointer">
           <span className="bg-red-600 text-white text-[10px] w-6 h-6 flex items-center justify-center rounded-full font-bold">
             {cart.reduce((a, b) => a + b.quantity, 0)}
           </span>
         </button>
       </nav>
 
-      {/* HOME PAGE - VERTICALLY CENTERED NO SCROLL */}
+      {/* STYLED MENU SECTION (RESTORED) */}
+      <div className={`fixed inset-0 z-[150] transition-opacity duration-500 ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+        <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />
+        <div className={`relative w-80 h-full bg-black/40 backdrop-blur-xl border-r border-white/10 p-10 flex flex-col justify-center space-y-8 transition-transform duration-500 ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <button onClick={() => setIsMenuOpen(false)} className="absolute top-10 right-10 text-[10px] font-black opacity-40 uppercase hover:opacity-100 transition-opacity cursor-pointer">Close</button>
+          {[
+            { id: 'CATALOGUE', label: 'Products' },
+            { id: 'SIZE_GUIDE', label: 'Size Guide' },
+            { id: 'SUSTAINABILITY', label: 'Sustainability' },
+            { id: 'FOUNDATION', label: 'Foundation' },
+            { id: 'SHIPMENT', label: 'Shipment Policy' },
+            { id: 'COOKIE', label: 'Cookie Policy' }
+          ].map((item) => (
+            <button 
+              key={item.id} 
+              onClick={() => navigate(item.id as ViewState)} 
+              className="group text-2xl font-black uppercase italic text-left transition-all relative overflow-hidden cursor-pointer"
+            >
+              <span className="relative z-10 group-hover:text-red-600 transition-colors">{item.label}</span>
+              <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-600 group-hover:w-full transition-all duration-300" />
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* MAIN CONTENT AREA */}
       <div className="relative z-10 min-h-screen flex items-center justify-center px-6">
         {view === 'HOME' && (
           <div className="flex flex-col items-center space-y-2 w-full max-w-2xl transform -translate-y-10">
             <img src="/visual lukks.png" alt="Visual Lukks" className="w-full h-auto object-contain animate-pulse" />
-            <button onClick={() => navigate('CATALOGUE')} className="px-12 py-4 border border-white hover:bg-red-600 hover:border-red-600 transition-all uppercase font-black text-xs tracking-[0.4em]">
+            <button onClick={() => navigate('CATALOGUE')} className="px-12 py-4 border border-white hover:bg-red-600 hover:border-red-600 transition-all uppercase font-black text-xs tracking-[0.4em] cursor-pointer">
               Shop With Us
             </button>
           </div>
         )}
 
-        {/* CATALOGUE, GRID, DETAIL VIEWS... (Intact from previous version) */}
         {view === 'CATALOGUE' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 w-full max-w-5xl mt-20">
             {catalogues.map(cat => (
@@ -157,10 +180,10 @@ export default function Home() {
               <p className="text-3xl font-bold text-red-600">£{selectedProduct.price}.00</p>
               <div className="flex gap-2">
                 {['S', 'M', 'L', 'XL', 'XXL'].map(s => (
-                  <button key={s} onClick={() => setSelectedSize(s)} className={`w-12 h-12 border font-black ${selectedSize === s ? 'bg-red-600 border-red-600' : 'border-white/20'}`}>{s}</button>
+                  <button key={s} onClick={() => setSelectedSize(s)} className={`w-12 h-12 border font-black cursor-pointer ${selectedSize === s ? 'bg-red-600 border-red-600' : 'border-white/20'}`}>{s}</button>
                 ))}
               </div>
-              <button onClick={addToBag} className="w-full py-5 bg-white text-black font-black uppercase">Add to Bag</button>
+              <button onClick={addToBag} className="w-full py-5 bg-white text-black font-black uppercase cursor-pointer">Add to Bag</button>
             </div>
           </div>
         )}
@@ -173,7 +196,7 @@ export default function Home() {
           <div className="relative w-full max-w-md bg-black border-l border-white/10 h-full p-8 flex flex-col">
             <div className="flex justify-between items-center mb-10">
               <h2 className="font-black uppercase text-red-600">Your Bag</h2>
-              <button onClick={() => setIsCartOpen(false)} className="text-[10px] uppercase opacity-50">Continue Shopping</button>
+              <button onClick={() => setIsCartOpen(false)} className="text-[10px] uppercase opacity-50 cursor-pointer">Continue Shopping</button>
             </div>
             <div className="flex-1 overflow-y-auto space-y-6">
               {cart.map((item) => (
@@ -183,14 +206,14 @@ export default function Home() {
                     <p>{item.name}</p>
                     <p className="text-red-600">{item.selectedSize}</p>
                     <div className="flex items-center gap-3 mt-2">
-                      <button onClick={() => updateQuantity(item.cartId, -1)} className="w-5 h-5 border border-white/20 flex items-center justify-center">-</button>
+                      <button onClick={() => updateQuantity(item.cartId, -1)} className="w-5 h-5 border border-white/20 flex items-center justify-center cursor-pointer">-</button>
                       <span>{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.cartId, 1)} className="w-5 h-5 border border-white/20 flex items-center justify-center">+</button>
+                      <button onClick={() => updateQuantity(item.cartId, 1)} className="w-5 h-5 border border-white/20 flex items-center justify-center cursor-pointer">+</button>
                     </div>
                   </div>
                   <div className="text-right">
                     <p className="font-bold mb-2">£{item.price * item.quantity}</p>
-                    <button onClick={() => removeFromCart(item.cartId)} className="text-red-600 text-[10px]">Remove</button>
+                    <button onClick={() => removeFromCart(item.cartId)} className="text-red-600 text-[10px] cursor-pointer">Remove</button>
                   </div>
                 </div>
               ))}
@@ -200,7 +223,7 @@ export default function Home() {
                 <span>Total</span>
                 <span>£{cart.reduce((a, b) => a + (b.price * b.quantity), 0)}</span>
               </div>
-              <button onClick={() => { setShowPaymentModal(true); setIsCartOpen(false); }} className="w-full py-5 bg-red-600 font-black uppercase">Proceed to Payment</button>
+              <button onClick={() => { setShowPaymentModal(true); setIsCartOpen(false); }} className="w-full py-5 bg-red-600 font-black uppercase cursor-pointer">Proceed to Payment</button>
             </div>
           </div>
         </div>
@@ -213,12 +236,12 @@ export default function Home() {
           <div className="relative w-full max-w-lg bg-black border border-white/10 p-8 rounded-3xl">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-xl font-black uppercase italic">Checkout</h2>
-              <button onClick={() => { setShowPaymentModal(false); setIsCartOpen(true); }} className="text-red-600 text-[10px] font-black uppercase underline">Back to Bag</button>
+              <button onClick={() => { setShowPaymentModal(false); setIsCartOpen(true); }} className="text-red-600 text-[10px] font-black uppercase underline cursor-pointer">Back to Bag</button>
             </div>
             
             <div className="flex flex-wrap gap-2 mb-8 border-b border-white/10 pb-4">
               {['MPESA_STK', 'MPESA_PAYBILL', 'VISA'].map((m) => (
-                <button key={m} onClick={() => setPaymentMethod(m as any)} className={`text-[10px] font-black px-4 py-2 rounded-full border ${paymentMethod === m ? 'bg-red-600 border-red-600' : 'border-white/10 opacity-50'}`}>
+                <button key={m} onClick={() => setPaymentMethod(m as any)} className={`text-[10px] font-black px-4 py-2 rounded-full border cursor-pointer ${paymentMethod === m ? 'bg-red-600 border-red-600' : 'border-white/10 opacity-50'}`}>
                   {m.replace('_', ' ')}
                 </button>
               ))}
@@ -226,9 +249,8 @@ export default function Home() {
 
             {paymentMethod === 'MPESA_STK' && (
               <div className="space-y-4">
-                <p className="text-[10px] uppercase opacity-60 text-center">Enter your M-Pesa number to receive STK prompt</p>
                 <input type="text" placeholder="2547XXXXXXXX" className="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
-                <button onClick={submitOrder} className="w-full py-4 bg-red-600 text-white font-black uppercase rounded-xl">Send Prompt</button>
+                <button onClick={submitOrder} className="w-full py-4 bg-red-600 text-white font-black uppercase rounded-xl cursor-pointer">Send Prompt</button>
               </div>
             )}
 
@@ -236,8 +258,7 @@ export default function Home() {
               <div className="space-y-4 bg-white/5 p-6 rounded-2xl border border-white/10">
                 <div className="flex justify-between border-b border-white/10 pb-2"><span className="opacity-60 uppercase text-xs">Business No</span><span className="font-black text-red-600">247247</span></div>
                 <div className="flex justify-between border-b border-white/10 pb-2"><span className="opacity-60 uppercase text-xs">Account No</span><span className="font-black text-red-600">0795151303</span></div>
-                <div className="flex justify-between"><span className="opacity-60 uppercase text-xs">Amount</span><span className="font-black">£{cart.reduce((a, b) => a + (b.price * b.quantity), 0)}</span></div>
-                <button onClick={submitOrder} className="w-full py-4 bg-red-600 mt-4 font-black uppercase">Confirm Manual Payment</button>
+                <button onClick={submitOrder} className="w-full py-4 bg-red-600 mt-4 font-black uppercase cursor-pointer">Confirm Payment</button>
               </div>
             )}
 
@@ -248,7 +269,7 @@ export default function Home() {
                   <input type="text" placeholder="MM/YY" className="w-1/2 bg-white/5 border border-white/10 p-4 rounded-xl" />
                   <input type="text" placeholder="CVC" className="w-1/2 bg-white/5 border border-white/10 p-4 rounded-xl" />
                 </div>
-                <button onClick={submitOrder} className="w-full py-4 bg-red-600 font-black uppercase rounded-xl">Pay with Visa</button>
+                <button onClick={submitOrder} className="w-full py-4 bg-red-600 font-black uppercase rounded-xl cursor-pointer">Pay with Visa</button>
               </div>
             )}
           </div>
