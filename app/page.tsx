@@ -19,13 +19,18 @@ export default function Home() {
   const [paymentMethod, setPaymentMethod] = useState<'NONE' | 'MPESA_STK' | 'MPESA_PAYBILL' | 'VISA'>('NONE');
   const [phoneNumber, setPhoneNumber] = useState('');
 
-  // 1. FIXED BROWSER BACK/FORWARD BUTTONS
+  // 1. FIXED BROWSER BACK/FORWARD BUTTONS (RESTORED)
   useEffect(() => {
     const handlePopState = (event: any) => {
       if (event.state) {
         setView(event.state.view || 'HOME');
         setActiveCat(event.state.cat || null);
         setSelectedProduct(event.state.prod || null);
+      } else {
+        // Handle the initial state if user backs all the way out
+        setView('HOME');
+        setActiveCat(null);
+        setSelectedProduct(null);
       }
     };
     window.addEventListener('popstate', handlePopState);
@@ -54,6 +59,8 @@ export default function Home() {
     setSelectedProduct(prod);
     setIsMenuOpen(false);
     if (prod) setActiveImage(prod.image_url);
+    
+    // Push to history so back/forward works
     window.history.pushState({ view: newView, cat, prod }, "");
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -94,7 +101,6 @@ export default function Home() {
     }
   };
 
-  // REUSABLE POLICY PAGE WRAPPER
   const PolicyPage = ({ title, children }: { title: string, children: React.ReactNode }) => (
     <div className="max-w-4xl mx-auto pt-32 px-6 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <h1 className="text-5xl font-black italic uppercase tracking-tighter text-red-600 mb-8 border-b border-white/10 pb-4">{title}</h1>
@@ -110,12 +116,10 @@ export default function Home() {
       <div className="fixed inset-0 -z-30 bg-black" />
       <video src={bgVideo || "/hero-bg.mp4"} autoPlay loop muted playsInline className="fixed inset-0 -z-25 w-full h-full object-cover opacity-60 pointer-events-none" />
 
-      {/* PERSISTENT LOGO (BOTTOM LEFT) */}
       <div className="fixed bottom-8 left-8 z-[100] mix-blend-difference pointer-events-none">
         <img src="/vlogo.png" alt="VLK Logo" className="w-16 h-auto opacity-80" />
       </div>
 
-      {/* NAV */}
       <nav className="fixed top-0 w-full z-[100] px-6 py-8 flex justify-between items-center mix-blend-difference">
         <button onClick={() => setIsMenuOpen(true)} className="flex items-center gap-4 group cursor-pointer">
           <div className="space-y-1.5"><div className="w-6 h-0.5 bg-white"/><div className="w-4 h-0.5 bg-white"/></div>
@@ -127,7 +131,6 @@ export default function Home() {
         </button>
       </nav>
 
-      {/* MENU SIDEBAR */}
       <div className={`fixed inset-0 z-[150] transition-opacity duration-500 ${isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />
         <div className={`relative w-80 h-full bg-black/40 backdrop-blur-xl border-r border-white/10 p-10 flex flex-col justify-center space-y-8 transition-transform duration-500 ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
@@ -139,7 +142,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* VIEWS */}
       <div className="relative z-10">
         {view === 'HOME' && (
           <div className="min-h-screen flex flex-col items-center justify-center transform -translate-y-10">
@@ -227,7 +229,6 @@ export default function Home() {
         )}
       </div>
 
-      {/* CART DRAWER */}
       {isCartOpen && (
         <div className="fixed inset-0 z-[200] flex justify-end">
           <div className="absolute inset-0 bg-black/80" onClick={() => setIsCartOpen(false)} />
@@ -264,7 +265,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* PAYMENT MODAL */}
       {showPaymentModal && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/95 backdrop-blur-md" onClick={() => setShowPaymentModal(false)} />
