@@ -30,30 +30,50 @@ function LoginContent() {
   };
 
   return (
-    <main className="min-h-screen bg-black flex items-center justify-center p-6 font-mono">
-      <div className="max-w-md w-full bg-[#050505] border border-[#a67c52]/20 p-10 shadow-2xl">
-        <h1 className="text-white text-2xl font-black tracking-[0.5em] uppercase mb-2 text-center">VLK²</h1>
-        <p className="text-[#a67c52] text-[8px] tracking-[0.3em] uppercase mb-8 text-center opacity-40">System Authentication</p>
+    <main className="min-h-screen bg-black flex items-center justify-center p-6 font-sans">
+      <div className="max-w-md w-full bg-black border border-white/10 p-10 shadow-[0_0_50px_rgba(220,38,38,0.1)] rounded-[40px] backdrop-blur-xl">
+        
+        {/* LOGO ADDED HERE */}
+        <div className="flex flex-col items-center mb-10">
+          <img src="/logo1.png" alt="VLK" className="h-10 mb-6" />
+          <h1 className="text-white text-3xl font-black italic tracking-tighter uppercase text-center">Admin Access</h1>
+          <p className="text-red-600 text-[10px] tracking-[0.4em] uppercase font-bold mt-2 opacity-80 text-center text-pretty">Secure Terminal</p>
+        </div>
         
         {logoutStatus === 'success' && (
-          <p className="text-green-500 text-[9px] mb-6 text-center uppercase tracking-widest py-2 bg-green-500/5 border border-green-500/20">Session Terminated</p>
+          <p className="text-red-600 text-[9px] mb-6 text-center uppercase font-black tracking-widest py-3 bg-red-600/5 border border-red-600/20 rounded-xl">Session Terminated</p>
         )}
 
         <form onSubmit={handleLogin} className="space-y-6">
-          <input 
-            type="email" placeholder="IDENTITY_EMAIL" 
-            className="w-full bg-transparent border-b border-white/10 py-3 outline-none text-white text-[10px] focus:border-[#a67c52]" 
-            onChange={(e) => setEmail(e.target.value)} required 
-          />
-          <input 
-            type="password" placeholder="ACCESS_KEY" 
-            className="w-full bg-transparent border-b border-white/10 py-3 outline-none text-white text-[10px] focus:border-[#a67c52]" 
-            onChange={(e) => setPassword(e.target.value)} required 
-          />
-          <button disabled={loading} className="w-full py-4 bg-[#a67c52] text-black text-[10px] font-black tracking-[0.3em] uppercase hover:bg-white transition-all">
-            {loading ? 'AUTHENTICATING...' : 'ESTABLISH_CONNECTION'}
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase opacity-40 ml-1">Identity</label>
+            <input 
+              type="email" placeholder="EMAIL_ADDRESS" 
+              className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none text-white text-xs focus:border-red-600 transition-all" 
+              onChange={(e) => setEmail(e.target.value)} required 
+            />
+          </div>
+          
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase opacity-40 ml-1">Access Key</label>
+            <input 
+              type="password" placeholder="••••••••" 
+              className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none text-white text-xs focus:border-red-600 transition-all" 
+              onChange={(e) => setPassword(e.target.value)} required 
+            />
+          </div>
+
+          <button 
+            disabled={loading} 
+            className="w-full py-5 bg-red-600 text-white text-xs font-black tracking-[0.2em] uppercase hover:bg-white hover:text-black transition-all rounded-2xl mt-4"
+          >
+            {loading ? 'Authenticating...' : 'Establish Connection'}
           </button>
         </form>
+        
+        <div className="mt-10 pt-6 border-t border-white/5 text-center">
+          <p className="text-[8px] text-white/20 uppercase font-black tracking-widest">VLK² Proprietary System</p>
+        </div>
       </div>
     </main>
   );
