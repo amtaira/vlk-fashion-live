@@ -19,7 +19,6 @@ export default function Home() {
   const [paymentMethod, setPaymentMethod] = useState<'NONE' | 'MPESA_STK' | 'MPESA_PAYBILL' | 'VISA'>('NONE');
   const [phoneNumber, setPhoneNumber] = useState('');
   
-  // Added only these for Visa details
   const [cardNumber, setCardNumber] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');
   const [cardCvv, setCardCvv] = useState('');
@@ -112,7 +111,7 @@ export default function Home() {
 
   const PolicyPage = ({ title, children }: { title: string, children: React.ReactNode }) => (
     <div className="max-w-4xl mx-auto pt-32 px-6 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <h1 className="text-5xl font-black italic uppercase tracking-tighter text-red-600 mb-8 border-b border-white/10 pb-4">{title}</h1>
+      <h2 className="text-5xl font-black italic uppercase tracking-tighter text-red-600 mb-8 border-b border-white/10 pb-4">{title}</h2>
       <div className="text-lg leading-relaxed text-white/80 space-y-6 font-medium uppercase tracking-tight">
         {children}
       </div>
@@ -122,11 +121,14 @@ export default function Home() {
 
   return (
     <main className="min-h-screen text-white relative overflow-x-hidden font-sans">
+      {/* Hidden SEO Header for Googlebot */}
+      <h1 className="sr-only">VLK | Visual Lukks Official Digital Terminal</h1>
+
       <div className="fixed inset-0 -z-30 bg-black" />
       <video src={bgVideo || "/hero-bg.mp4"} autoPlay loop muted playsInline className="fixed inset-0 -z-25 w-full h-full object-cover opacity-60 pointer-events-none" />
 
       <div className="fixed bottom-8 left-8 z-[100] mix-blend-difference pointer-events-none">
-        <img src="/vlogo.png" alt="VLK Logo" className="w-16 h-auto opacity-80" />
+        <img src="/vlogo.png" alt="VLK Branding" className="w-16 h-auto opacity-80" />
       </div>
 
       <nav className="fixed top-0 w-full z-[100] px-6 py-8 flex justify-between items-center mix-blend-difference">
@@ -134,7 +136,7 @@ export default function Home() {
           <div className="space-y-1.5"><div className="w-6 h-0.5 bg-white"/><div className="w-4 h-0.5 bg-white"/></div>
           <span className="text-[10px] font-black uppercase tracking-widest">Menu</span>
         </button>
-        <img src="/logo1.png" alt="VLK" className="h-8 cursor-pointer" onClick={() => navigate('HOME')} />
+        <img src="/logo1.png" alt="VLK Visual Lukks" className="h-8 cursor-pointer" onClick={() => navigate('HOME')} />
         <button onClick={() => setIsCartOpen(true)} className="relative cursor-pointer">
           <span className="bg-red-600 text-white text-[10px] w-6 h-6 flex items-center justify-center rounded-full font-bold">{cart.reduce((a, b) => a + b.quantity, 0)}</span>
         </button>
@@ -164,7 +166,7 @@ export default function Home() {
             <div className="w-20 h-20 border-4 border-red-600 rounded-full flex items-center justify-center mb-8 animate-bounce">
               <span className="text-4xl">✓</span>
             </div>
-            <h1 className="text-6xl font-black italic uppercase mb-4">Order Received</h1>
+            <h2 className="text-6xl font-black italic uppercase mb-4">Order Received</h2>
             <p className="max-w-md opacity-70 uppercase font-bold text-sm tracking-widest">Your order is being processed. Our admin will verify your payment details shortly. Check your phone for notification.</p>
             <button onClick={() => navigate('HOME')} className="mt-10 px-10 py-4 bg-white text-black font-black uppercase tracking-tighter">Back to Home</button>
           </div>
@@ -214,7 +216,7 @@ export default function Home() {
           <div className="max-w-6xl mx-auto grid grid-cols-2 lg:grid-cols-3 gap-10 mt-40 px-6">
             {activeCat?.products?.map((p: any) => (
               <div key={p.id} onClick={() => navigate('DETAIL', activeCat, p)} className="cursor-pointer bg-black/40 p-4 rounded-2xl border border-white/5 backdrop-blur-sm">
-                <img src={p.image_url} className="aspect-[3/4] object-contain mb-4" />
+                <img src={p.image_url} alt={`${p.name} - VLK Exclusive`} className="aspect-[3/4] object-contain mb-4" />
                 <h3 className="font-black uppercase text-[10px] tracking-widest">{p.name}</h3>
                 <p className="text-red-600 font-bold">£{p.price}.00</p>
               </div>
@@ -224,9 +226,9 @@ export default function Home() {
 
         {view === 'DETAIL' && selectedProduct && (
           <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 bg-black/60 p-10 rounded-[40px] border border-white/10 backdrop-blur-xl mt-40 mx-6">
-            <img src={activeImage} className="w-full h-auto object-contain rounded-3xl" />
+            <img src={activeImage} alt={`VLK ${selectedProduct.name}`} className="w-full h-auto object-contain rounded-3xl" />
             <div className="space-y-8">
-              <h1 className="text-6xl font-black uppercase italic tracking-tighter">{selectedProduct.name}</h1>
+              <h2 className="text-6xl font-black uppercase italic tracking-tighter">{selectedProduct.name}</h2>
               <p className="text-3xl font-bold text-red-600">£{selectedProduct.price}.00</p>
               <div className="flex gap-2">
                 {['S', 'M', 'L', 'XL', 'XXL'].map(s => (
@@ -251,7 +253,7 @@ export default function Home() {
             <div className="flex-1 overflow-y-auto space-y-6">
               {cart.map((item) => (
                 <div key={item.cartId} className="flex gap-4 items-center border-b border-white/5 pb-4">
-                  <img src={item.activeImage} className="w-16 h-20 object-cover" />
+                  <img src={item.activeImage} className="w-16 h-20 object-cover" alt={item.name} />
                   <div className="flex-1 text-[10px] font-black uppercase">
                     <p>{item.name}</p>
                     <p className="text-red-600">{item.selectedSize}</p>
@@ -317,6 +319,10 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      <footer className="py-10 text-center opacity-20 text-[8px] uppercase tracking-[0.5em] font-black">
+        © 2026 VLK / Visual Lukks Official Archive
+      </footer>
     </main>
   );
 }
