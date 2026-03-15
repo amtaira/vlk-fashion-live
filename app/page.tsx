@@ -143,8 +143,6 @@ export default function Home() {
       <div className="relative z-10">
         {view === 'HOME' && (
           <div className="min-h-screen flex flex-col items-center justify-center transform -translate-y-10">
-            {/* UPDATED LOGO FONT */}
-            <img src="/visual lukks.png" alt="Visual Lukks" className="w-full max-w-2xl h-auto object-contain animate-pulse mb-8" />
             <button onClick={() => navigate('CATALOGUE')} className="px-12 py-4 border border-white hover:bg-red-600 hover:border-red-600 transition-all uppercase font-black text-xs tracking-[0.4em]">Shop With Us</button>
           </div>
         )}
@@ -293,6 +291,13 @@ export default function Home() {
                 <div className="flex justify-between border-b border-white/10 pb-2"><span className="opacity-60 uppercase text-xs">Business No</span><span className="font-black text-red-600">247247</span></div>
                 <div className="flex justify-between border-b border-white/10 pb-2"><span className="opacity-60 uppercase text-xs">Account No</span><span className="font-black text-red-600">0795151303</span></div>
                 <button onClick={submitOrder} className="w-full py-4 bg-red-600 mt-4 font-black uppercase">Confirm Payment</button>
+              </div>
+            )}
+            {paymentMethod === 'VISA' && (
+              <div className="space-y-4">
+                <p className="text-[10px] uppercase opacity-60 mb-2">Enter phone number associated with card for verification</p>
+                <input type="text" placeholder="Phone Number" className="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
+                <button onClick={submitOrder} className="w-full py-4 bg-red-600 text-white font-black uppercase rounded-xl">Complete with Visa</button>
               </div>
             )}
           </div>
