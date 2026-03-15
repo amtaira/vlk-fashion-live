@@ -18,8 +18,13 @@ export default function Home() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'NONE' | 'MPESA_STK' | 'MPESA_PAYBILL' | 'VISA'>('NONE');
   const [phoneNumber, setPhoneNumber] = useState('');
+  
+  // Added only these for Visa details
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvv, setCardCvv] = useState('');
 
-  // 1. FIXED BROWSER BACK/FORWARD BUTTONS (RESTORED)
+  // 1. ROBUST HISTORY LISTENER
   useEffect(() => {
     const handlePopState = (event: any) => {
       if (event.state) {
@@ -27,13 +32,18 @@ export default function Home() {
         setActiveCat(event.state.cat || null);
         setSelectedProduct(event.state.prod || null);
       } else {
-        // Handle the initial state if user backs all the way out
         setView('HOME');
         setActiveCat(null);
         setSelectedProduct(null);
       }
     };
+
     window.addEventListener('popstate', handlePopState);
+    
+    if (!window.history.state) {
+      window.history.replaceState({ view: 'HOME', cat: null, prod: null }, "");
+    }
+
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
@@ -60,7 +70,6 @@ export default function Home() {
     setIsMenuOpen(false);
     if (prod) setActiveImage(prod.image_url);
     
-    // Push to history so back/forward works
     window.history.pushState({ view: newView, cat, prod }, "");
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -131,6 +140,7 @@ export default function Home() {
         </button>
       </nav>
 
+      {/* MENU */}
       <div className={`fixed inset-0 z-[150] transition-opacity duration-500 ${isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />
         <div className={`relative w-80 h-full bg-black/40 backdrop-blur-xl border-r border-white/10 p-10 flex flex-col justify-center space-y-8 transition-transform duration-500 ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
@@ -178,13 +188,13 @@ export default function Home() {
         {view === 'SIZE_GUIDE' && (
           <PolicyPage title="Size Guide">
             <p>Our silhouettes are cut for an 'Urban Oversize' fit.</p>
-            <table className="w-full border border-white/10 text-xs">
-              <thead><tr className="bg-white/5 font-black uppercase"><th>Size</th><th>Chest (in)</th><th>Length (in)</th></tr></thead>
-              <tbody className="text-center">
-                <tr><td>S</td><td>44</td><td>28</td></tr>
-                <tr><td>M</td><td>46</td><td>29</td></tr>
-                <tr><td>L</td><td>48</td><td>30</td></tr>
-                <tr><td>XL</td><td>50</td><td>31</td></tr>
+            <table className="w-full border border-white/10 text-xs mt-4">
+              <thead><tr className="bg-white/5 font-black uppercase text-left"><th className="p-2">Size</th><th className="p-2">Chest (in)</th><th className="p-2">Length (in)</th></tr></thead>
+              <tbody className="text-left">
+                <tr className="border-b border-white/5"><td className="p-2">S</td><td className="p-2">44</td><td className="p-2">28</td></tr>
+                <tr className="border-b border-white/5"><td className="p-2">M</td><td className="p-2">46</td><td className="p-2">29</td></tr>
+                <tr className="border-b border-white/5"><td className="p-2">L</td><td className="p-2">48</td><td className="p-2">30</td></tr>
+                <tr className="border-b border-white/5"><td className="p-2">XL</td><td className="p-2">50</td><td className="p-2">31</td></tr>
               </tbody>
             </table>
           </PolicyPage>
@@ -229,6 +239,7 @@ export default function Home() {
         )}
       </div>
 
+      {/* MODALS (PAYMENT & CART) */}
       {isCartOpen && (
         <div className="fixed inset-0 z-[200] flex justify-end">
           <div className="absolute inset-0 bg-black/80" onClick={() => setIsCartOpen(false)} />
@@ -295,8 +306,11 @@ export default function Home() {
             )}
             {paymentMethod === 'VISA' && (
               <div className="space-y-4">
-                <p className="text-[10px] uppercase opacity-60 mb-2">Enter phone number associated with card for verification</p>
-                <input type="text" placeholder="Phone Number" className="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
+                <input type="text" placeholder="Card Number" className="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none" value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} />
+                <div className="grid grid-cols-2 gap-4">
+                   <input type="text" placeholder="MM/YY" className="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none" value={cardExpiry} onChange={(e) => setCardExpiry(e.target.value)} />
+                   <input type="text" placeholder="CVV" className="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none" value={cardCvv} onChange={(e) => setCardCvv(e.target.value)} />
+                </div>
                 <button onClick={submitOrder} className="w-full py-4 bg-red-600 text-white font-black uppercase rounded-xl">Complete with Visa</button>
               </div>
             )}
