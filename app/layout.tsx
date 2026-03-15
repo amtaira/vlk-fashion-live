@@ -12,15 +12,17 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// 1. BRAND IDENTITY METADATA
 export const metadata: Metadata = {
+  // This tells Google the exact name of the site
   title: "VLK | Visual Lukks Official",
-  description: "Official digital terminal for VLK. Explore exclusive drops and the latest collections from Visual Lukks.",
-  keywords: ["VLK", "Visual Lukks", "VLK Brand", "VLK Clothing", "Visual Lukks Official"],
-  // 2. GOOGLE VERIFICATION (Paste your code from Search Console here)
+  description: "The official digital terminal for VLK. Explore the latest collections and exclusive drops from Visual Lukks.",
+  keywords: ["VLK", "Visual Lukks", "VLK Brand", "Clothing", "Design"],
+  
+  // 1. ACTION REQUIRED: Replace with the code from your Google Search Console screenshot
   verification: {
-    google: "PASTE_YOUR_GOOGLE_VERIFICATION_CODE_HERE",
+    google: "YOUR_CODE_FROM_SEARCH_CONSOLE", 
   },
+  
   icons: {
     icon: "/favicon.ico",
   },
@@ -36,7 +38,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
 
-        {/* 3. ORGANIZATION SCHEMA (Hidden data for Google) */}
+        {/* 2. BRAND AUTHORITY SCHEMA */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -45,11 +47,15 @@ export default function RootLayout({
               "@type": "Organization",
               "name": "VLK",
               "alternateName": "Visual Lukks",
-              "url": "https://your-live-domain.com",
-              "logo": "https://your-live-domain.com/logo1.png",
+              "url": "https://your-live-domain.com", // 3. ACTION REQUIRED: Put your real URL here
+              "logo": "https://your-live-domain.com/visual%20lukks.png",
+              "contactPoint": {
+                "@type": "ContactPoint",
+                "contactType": "customer support"
+              },
               "sameAs": [
-                "https://instagram.com/your-handle", // Add your social links here
-                "https://twitter.com/your-handle"
+                "https://www.instagram.com/visuallukks", // Example - update with your actual links
+                "https://twitter.com/visuallukks"
               ]
             }),
           }}
