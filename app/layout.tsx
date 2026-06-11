@@ -13,16 +13,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  // This tells Google the exact name of the site
-  title: "VLK | Visual Lukks Official",
-  description: "The official digital terminal for VLK. Explore the latest collections and exclusive drops from Visual Lukks.",
-  keywords: ["VLK", "Visual Lukks", "VLK Brand", "Clothing", "Design"],
-  
-  // 1. ACTION REQUIRED: Replace with the code from your Google Search Console screenshot
+  title: "Outfit Not Random | Official Digital Terminal",
+  description: "Intentional streetwear curations and structured architectural fashion silhouettes.",
+  keywords: ["Outfit Not Random", "ONR", "ONR Brand", "Clothing", "Design", "Architecture Streetwear"],
   verification: {
     google: "YOUR_CODE_FROM_SEARCH_CONSOLE", 
   },
-  
   icons: {
     icon: "/favicon.ico",
   },
@@ -38,24 +34,24 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
 
-        {/* 2. BRAND AUTHORITY SCHEMA */}
+        {/* BRAND AUTHORITY SCHEMA */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Organization",
-              "name": "VLK",
-              "alternateName": "Visual Lukks",
-              "url": "https://your-live-domain.com", // 3. ACTION REQUIRED: Put your real URL here
-              "logo": "https://your-live-domain.com/visual%20lukks.png",
+              "name": "Outfit Not Random",
+              "alternateName": "ONR",
+              "url": "https://ONR-fashion-live-gy5v.vercel.app", 
+              "logo": "https://ONR-fashion-live-gy5v.vercel.app/vlogo.png",
               "contactPoint": {
                 "@type": "ContactPoint",
                 "contactType": "customer support"
               },
               "sameAs": [
-                "https://www.instagram.com/visuallukks", // Example - update with your actual links
-                "https://twitter.com/visuallukks"
+                "https://www.instagram.com/outfitnotrandom",
+                "https://twitter.com/outfitnotrandom"
               ]
             }),
           }}

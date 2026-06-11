@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = "https://your-ecommerce-site.com";
+  const baseUrl = "https://ONR-fashion-live-gy5v.vercel.app";
 
   return {
     rules: [
@@ -13,14 +13,14 @@ export default function robots(): MetadataRoute.Robots {
           '/checkout',
           '/my-account',
           '/api/',
-          '/*?sort=',    // Blocks duplicate content from sorting
-          '/*?filter=',  // Blocks faceted navigation crawl waste
-          '/*?search=',  // Prevents internal search result indexing
+          '/*?sort=',    
+          '/*?filter=',  
+          '/*?search=',  
         ],
       },
       {
-        userAgent: 'GPTBot', // Modern 2026 practice: separate rules for AI bots
-        disallow: ['/'],     // Optional: block AI from scraping products for training
+        userAgent: 'GPTBot', 
+        disallow: ['/'],     
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
