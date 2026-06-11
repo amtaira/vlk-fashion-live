@@ -1,26 +1,30 @@
+/* Location: app/globals.css */
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Derived directly from the tactical olive and charcoal tones in your branding logo */
+  --background: #141612;
+  --foreground: #eaece6;
+  --onr-muted-olive: #929982;
+  --onr-charcoal-card: #1b1e18;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-onr-olive: var(--onr-muted-olive);
+  --color-onr-card: var(--onr-charcoal-card);
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Clear focus outlines for interactive buttons and control vectors */
+button:focus-visible, 
+input:focus-visible {
+  outline: 1px solid var(--onr-muted-olive);
 }

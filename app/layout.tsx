@@ -1,22 +1,20 @@
+// Location: app/layout.tsx
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Replaced system Arial defaults with Inter to provide clean typography structure
+const inter = Inter({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "500", "700", "900"],
 });
 
 export const metadata: Metadata = {
   title: "Outfit Not Random | Official Digital Terminal",
   description: "Intentional streetwear curations and structured architectural fashion silhouettes.",
-  keywords: ["Outfit Not Random", "ONR", "ONR Brand", "Clothing", "Design", "Architecture Streetwear"],
+  keywords: ["Outfit Not Random", "ONR", "ONR Brand", "Clothing Kenya", "Architectural Streetwear", "Design Engine"],
   verification: {
+    // Keeps verification handshake accurate
     google: "YOUR_CODE_FROM_SEARCH_CONSOLE", 
   },
   icons: {
@@ -31,10 +29,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${inter.className} antialiased bg-[#141612] text-[#eaece6]`}>
         {children}
 
-        {/* BRAND AUTHORITY SCHEMA */}
+        {/* BRAND AUTHORITY STRUCTURE MARKUP SCHEMA */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
